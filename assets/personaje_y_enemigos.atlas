@@ -1,0 +1,104 @@
+
+personaje_y_enemigos.png
+size: 2048, 512
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+attack
+  rotate: false
+  xy: 0, 0
+  size: 919, 48
+  orig: 1024, 96
+  offset: 45, 0
+  index: -1
+crouch
+  rotate: false
+  xy: 933, 0
+  size: 281, 44
+  orig: 384, 96
+  offset: 47, 0
+  index: -1
+crouch-attack
+  rotate: false
+  xy: 0, 57
+  size: 538, 30
+  orig: 640, 96
+  offset: 46, 0
+  index: -1
+fall
+  rotate: false
+  xy: 933, 57
+  size: 168, 50
+  orig: 256, 96
+  offset: 38, 5
+  index: -1
+fox
+  rotate: false
+  xy: 0, 114
+  size: 612, 32
+  orig: 640, 48
+  offset: 11, 0
+  index: -1
+fox-sword
+  rotate: false
+  xy: 933, 114
+  size: 612, 32
+  orig: 640, 48
+  offset: 11, 0
+  index: -1
+hurt
+  rotate: false
+  xy: 0, 171
+  size: 20, 45
+  orig: 128, 96
+  offset: 51, 1
+  index: -1
+idle
+  rotate: false
+  xy: 933, 171
+  size: 408, 44
+  orig: 512, 96
+  offset: 47, 0
+  index: -1
+jump
+  rotate: false
+  xy: 0, 228
+  size: 303, 46
+  orig: 384, 96
+  offset: 40, 4
+  index: -1
+jump-attack
+  rotate: false
+  xy: 933, 228
+  size: 551, 50
+  orig: 640, 96
+  offset: 38, 5
+  index: -1
+no-shuriken-dude
+  rotate: false
+  xy: 0, 285
+  size: 671, 55
+  orig: 720, 64
+  offset: 25, 0
+  index: -1
+run
+  rotate: false
+  xy: 933, 285
+  size: 933, 44
+  orig: 1024, 96
+  offset: 41, 0
+  index: -1
+shuriken
+  rotate: false
+  xy: 0, 342
+  size: 30, 13
+  orig: 32, 15
+  offset: 1, 1
+  index: -1
+shuriken-dude
+  rotate: false
+  xy: 933, 342
+  size: 675, 57
+  orig: 720, 64
+  offset: 21, 0
+  index: -1
