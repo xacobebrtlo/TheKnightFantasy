@@ -15,9 +15,7 @@ import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
 
 public class Personaje extends Sprite {
-    public enum State {FALLING, JUMPING, STANDIND, RUNNING}
-
-    ;
+    public enum State {FALLING, JUMPING, STANDIND, RUNNING};
     public State currentState;
     public State previusState;
     public World world;
