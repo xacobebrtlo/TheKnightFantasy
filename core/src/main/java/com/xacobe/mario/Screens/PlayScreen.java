@@ -64,13 +64,14 @@ public class PlayScreen implements Screen {
         world = new World(new Vector2(0, -9.8f), true);
         b2dr = new Box2DDebugRenderer();
         new B2WorldCreator(world, map);
-        personaje = new Personaje(world,this);
+        personaje = new Personaje(world, this);
 
 
     }
-public TextureAtlas getAtlas(){
-        return  atlas;
-}
+
+    public TextureAtlas getAtlas() {
+        return atlas;
+    }
 
     @Override
     public void show() {
@@ -78,15 +79,27 @@ public TextureAtlas getAtlas(){
     }
 
     public void handleInput(float dt) {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+
+//        if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+//        Personaje.isAttacking=true;
+//        Personaje.iscrouching=true;
+//        } else
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            Personaje.isAttacking=true;
+            Personaje.iscrouching=true;
+        }
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            Personaje.isAttacking = true;
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
             personaje.b2body.applyLinearImpulse(new Vector2(0, 4f), personaje.b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && personaje.b2body.getLinearVelocity().x <= 2) {
+        } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && personaje.b2body.getLinearVelocity().x <= 2) {
             personaje.b2body.applyLinearImpulse(new Vector2(0.1f, 0), personaje.b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && personaje.b2body.getLinearVelocity().x >= -2) {
+        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && personaje.b2body.getLinearVelocity().x >= -2) {
             personaje.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), personaje.b2body.getWorldCenter(), true);
         }
+
+//        Personaje.isAttacking = Gdx.input.isTouched();
+        Personaje.iscrouching = Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
     }
 
