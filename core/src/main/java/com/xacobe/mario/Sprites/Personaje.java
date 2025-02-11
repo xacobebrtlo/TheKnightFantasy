@@ -30,7 +30,7 @@ public class Personaje extends Sprite {
     public static boolean isAttacking;
     public static boolean Iscrouching;
 
-    private float stateTimer;
+    public static float stateTimer;
     private boolean runningRight;
 
     //Mi personaje es de 50*50
@@ -45,59 +45,59 @@ public class Personaje extends Sprite {
         iscrouching = false;
         isAttacking = false;
 
-        //CORREGIR ANIMACION PERSONAJE
+        //TODO corregir palo salto
         //Correr
         Array<TextureRegion> frames = new Array<TextureRegion>();
         for (int i = 0; i < 8; i++) {
-            frames.add(new TextureRegion(getTexture(), 933 + (i * 128), 285, 50, 50));
+            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 41, 285, 116, 44));
         }
         personajeRun = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         //SaLtar
         for (int i = 0; i < 3; i++) {
-            frames.add(new TextureRegion(getTexture(), i * 120, 228, 70, 50));
+            frames.add(new TextureRegion(getTexture(), (i * 128) - 20, 228, 101, 46));
         }
         personajeJump = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         //Caerse
         for (int i = 0; i < 2; i++) {
-            frames.add(new TextureRegion(getTexture(), 933 + (i * 128), 57, 50, 50));
+            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 20, 57 - 5, 84, 50));
         }
         personajeFalling = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         //Agacharse
         for (int i = 1; i < 3; i++) {
-            frames.add(new TextureRegion(getTexture(), 933 + (i * 128), 0, 50, 50));
+            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 47, 0, 94, 44));
         }
         personajeCrouching = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         //Atacar
-        for (int i = 0; i < 8; i++) {
-            frames.add(new TextureRegion(getTexture(), i * 126, 0, 50, 50));
+        for (int i = 1; i < 7; i++) {
+            frames.add(new TextureRegion(getTexture(), (i * 128) - 45, 0, 113, 48));
         }
         personajeAttacking = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         //Atacar agachado
-        for (int i = 0; i < 5; i++) {
-            frames.add(new TextureRegion(getTexture(), i * 128, 57, 50, 50));
+        for (int i = 1; i < 5; i++) {
+            frames.add(new TextureRegion(getTexture(), (i * 128) - 46, 52, 107, 37));
         }
         personajeAttackCrouch = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         //Estático
         for (int i = 0; i < 4; i++) {
-            frames.add(new TextureRegion(getTexture(), 933 + (i * 128), 171, 50, 50));
+            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 47, 171, 102, 44));
         }
         personajeStatico = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         definePersonaje();
-        setBounds(0, 0, 50 / MarioBros.PPM, 50 / MarioBros.PPM);
+        setBounds(0, 0, 113 / MarioBros.PPM, 50 / MarioBros.PPM);
         setRegion(personajeStatico.getKeyFrame(stateTimer, true));
     }
 
@@ -124,7 +124,7 @@ public class Personaje extends Sprite {
                 break;
             case CROUCHING:
                 region = personajeCrouching.getKeyFrame(stateTimer, true);
-                isAttacking = false;
+//                isAttacking = false;
                 break;
             case ATTACKING:
                 region = personajeAttacking.getKeyFrame(stateTimer, false);  // 'false' para que no se repita la animación
@@ -135,6 +135,10 @@ public class Personaje extends Sprite {
                 break;
             case ATTACKCROUCH:
                 region = personajeAttackCrouch.getKeyFrame(stateTimer);
+                if (personajeAttackCrouch.isAnimationFinished(stateTimer)) {
+                    isAttacking = false;            // Cuando termine la animación, desactiva el ataque
+                    currentState = State.CROUCHING;  // Vuelve al estado STANDIND
+                }
                 break;
             case STANDIND:
             default:
@@ -142,24 +146,21 @@ public class Personaje extends Sprite {
                 isAttacking = false;
                 break;
         }
-        if ((b2body.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) {
-            region.flip(true, false);
-            runningRight = false;
-        } else if ((b2body.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
-            region.flip(true, false);
-            runningRight = true;
-        }
 
 
-//        float timer8 = dt+3f;
-//        if (currentState == State.ATTACKING && stateTimer < timer8){
-//            currentState = State.ATTACKING;
-//        }
-        if (currentState == previusState) {
-            stateTimer += dt;
-        } else {
-            stateTimer = 0;  // Reinicia el temporizador al cambiar de estado
-        }
+            if ((b2body.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) {
+                region.flip(true, false);
+                runningRight = false;
+
+            } else if ((b2body.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
+                region.flip(true, false);
+                runningRight = true;
+            }
+
+
+
+        stateTimer = currentState == previusState ? stateTimer + dt : 0;
+
         previusState = currentState;
         return region;
     }
