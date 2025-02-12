@@ -31,6 +31,7 @@ import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Scenes.Hud;
 import com.xacobe.mario.Sprites.Personaje;
 import com.xacobe.mario.Tools.B2WorldCreator;
+import com.xacobe.mario.Tools.WorldContactListener;
 
 public class PlayScreen implements Screen {
     private MarioBros game;
@@ -66,7 +67,7 @@ public class PlayScreen implements Screen {
         new B2WorldCreator(world, map);
         personaje = new Personaje(world, this);
 
-
+        world.setContactListener(new WorldContactListener());
     }
 
     public TextureAtlas getAtlas() {
@@ -84,15 +85,30 @@ public class PlayScreen implements Screen {
 //        Personaje.isAttacking=true;
 //        Personaje.iscrouching=true;
 //        } else
-        if (Gdx.input.isKeyPressed(Input.Keys.Q) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+
+        //Atacar saltando
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q) && personaje.b2body.getLinearVelocity().y > 0 && personaje.runningRight) {
+            Personaje.isJumpAttack = true;
+            Personaje.stateTimer = 0;
+            personaje.b2body.applyLinearImpulse(new Vector2(1f, 0), personaje.b2body.getWorldCenter(), true);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q) && personaje.b2body.getLinearVelocity().y > 0 && !personaje.runningRight) {
+            Personaje.isJumpAttack = true;
+            Personaje.stateTimer = 0;
+            personaje.b2body.applyLinearImpulse(new Vector2(-1f, 0), personaje.b2body.getWorldCenter(), true);
+
+            //Atacar agachado
+        } else if (Gdx.input.isKeyPressed(Input.Keys.Q) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             Personaje.isAttacking = true;
             Personaje.iscrouching = true;
             Personaje.stateTimer = 0;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+
+            //Atacar
+        } else if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
             Personaje.stateTimer = 0;
             Personaje.isAttacking = true;
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+
+            //Movimiento normal
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP) && personaje.b2body.getLinearVelocity().y == 0) {
             personaje.b2body.applyLinearImpulse(new Vector2(0, 4f), personaje.b2body.getWorldCenter(), true);
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && personaje.b2body.getLinearVelocity().x <= 2) {
             personaje.b2body.applyLinearImpulse(new Vector2(0.1f, 0), personaje.b2body.getWorldCenter(), true);

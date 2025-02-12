@@ -3,17 +3,20 @@ package com.xacobe.mario.Sprites;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
 
 public class Personaje extends Sprite {
-    public enum State {FALLING, JUMPING, STANDIND, RUNNING, CROUCHING, ATTACKING, ATTACKCROUCH}
+    public enum State {FALLING, JUMPING, STANDIND, RUNNING, CROUCHING, ATTACKING, ATTACKCROUCH, JUMPATTACK}
 
     public State currentState;
     public State previusState;
@@ -26,12 +29,14 @@ public class Personaje extends Sprite {
     private Animation<TextureRegion> personajeCrouching;
     private Animation<TextureRegion> personajeAttacking;
     private Animation<TextureRegion> personajeAttackCrouch;
+    private Animation<TextureRegion> personajeJumpAttack;
     public static boolean iscrouching;
     public static boolean isAttacking;
-    public static boolean Iscrouching;
+    public static boolean isJumpAttack;
+
 
     public static float stateTimer;
-    private boolean runningRight;
+    public boolean runningRight;
 
     //Mi personaje es de 50*50
     public Personaje(World world, PlayScreen screen) {
@@ -89,6 +94,12 @@ public class Personaje extends Sprite {
         personajeAttackCrouch = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
+        //Atacar saltando
+        for (int i = 1; i < 5; i++) {
+            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 38, 228 - 5, 110, 50));
+        }
+        personajeJumpAttack = new Animation<TextureRegion>(0.1f, frames);
+        frames.clear();
         //Estático
         for (int i = 0; i < 4; i++) {
             frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 47, 171, 102, 44));
@@ -140,6 +151,14 @@ public class Personaje extends Sprite {
                     currentState = State.CROUCHING;  // Vuelve al estado STANDIND
                 }
                 break;
+            case JUMPATTACK:
+                region = personajeJumpAttack.getKeyFrame(stateTimer);
+                if (personajeJumpAttack.isAnimationFinished(stateTimer)) {
+                    isJumpAttack = false;
+                    currentState = State.FALLING;
+                }
+
+                break;
             case STANDIND:
             default:
                 region = personajeStatico.getKeyFrame(stateTimer, true);
@@ -148,15 +167,14 @@ public class Personaje extends Sprite {
         }
 
 
-            if ((b2body.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) {
-                region.flip(true, false);
-                runningRight = false;
+        if ((b2body.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) {
+            region.flip(true, false);
+            runningRight = false;
 
-            } else if ((b2body.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
-                region.flip(true, false);
-                runningRight = true;
-            }
-
+        } else if ((b2body.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
+            region.flip(true, false);
+            runningRight = true;
+        }
 
 
         stateTimer = currentState == previusState ? stateTimer + dt : 0;
@@ -167,11 +185,13 @@ public class Personaje extends Sprite {
 
     public State getState() {
 
-        if (isAttacking && iscrouching) {
+        if (isJumpAttack) {
+            return State.JUMPATTACK;
+        } else if (isAttacking && iscrouching) {
             return State.ATTACKCROUCH;
-        } else if (isAttacking) {
+        } else if (isAttacking && b2body.getLinearVelocity().y == 0) {
             return State.ATTACKING;
-        } else if (b2body.getLinearVelocity().y < 0) {
+        } else if (b2body.getLinearVelocity().y < 0 && currentState != State.JUMPATTACK) {
             return State.FALLING;
         } else if (b2body.getLinearVelocity().y > 0 || (b2body.getLinearVelocity().y < 0 && previusState == State.JUMPING)) {
             return State.JUMPING;
@@ -191,10 +211,17 @@ public class Personaje extends Sprite {
         b2body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(15 / MarioBros.PPM);//antes era 5
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(10 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
 
         fdef.shape = shape;
         b2body.createFixture(fdef);
+
+        //TODO Añadir sensor en la cabeza (Luego lo necesito para Añadir sensor en el ataque con booleanas)
+        EdgeShape head = new EdgeShape();
+        head.set(new Vector2(-10 / MarioBros.PPM, 23 / MarioBros.PPM), new Vector2(10 / MarioBros.PPM, 23 / MarioBros.PPM));
+        fdef.shape = head;
+        fdef.isSensor = true;
+        b2body.createFixture(fdef).setUserData("head");
     }
 }
