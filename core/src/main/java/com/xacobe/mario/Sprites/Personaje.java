@@ -3,17 +3,21 @@ package com.xacobe.mario.Sprites;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
+
+import java.awt.geom.RectangularShape;
 
 public class Personaje extends Sprite {
     public enum State {FALLING, JUMPING, STANDIND, RUNNING, CROUCHING, ATTACKING, ATTACKCROUCH, JUMPATTACK}
@@ -22,6 +26,7 @@ public class Personaje extends Sprite {
     public State previusState;
     public World world;
     public Body b2body;
+
     private Animation<TextureRegion> personajeStatico;
     private Animation<TextureRegion> personajeRun;
     private Animation<TextureRegion> personajeJump;
@@ -102,7 +107,7 @@ public class Personaje extends Sprite {
         frames.clear();
         //Estático
         for (int i = 0; i < 4; i++) {
-            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 47, 171, 102, 44));
+            frames.add(new TextureRegion(getTexture(), 933 + (i * 128) - 39, 171, 102, 44));
         }
         personajeStatico = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
@@ -112,10 +117,40 @@ public class Personaje extends Sprite {
         setRegion(personajeStatico.getKeyFrame(stateTimer, true));
     }
 
+
     public void update(float dt) {
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         setRegion(getFrame(dt));
+
+        if (currentState == State.ATTACKING) {
+            if (personajeAttacking.isAnimationFinished(stateTimer)) {
+                isAttacking = false;
+                currentState = State.STANDIND;
+                removeAttackFixture();
+            }
+        } else if (currentState == State.ATTACKCROUCH) {
+            if (personajeAttackCrouch.isAnimationFinished(stateTimer)) {
+                isAttacking = false;
+                currentState = State.CROUCHING;
+                removeAttackFixture();
+            }
+        } else if (currentState == State.JUMPATTACK) {
+            if (personajeJumpAttack.isAnimationFinished(stateTimer)) {
+                isJumpAttack = false;
+                currentState = State.FALLING;
+                removeAttackFixture();
+            }
+        }
     }
+
+    // Nuevo método para eliminar la fixture de ataque de forma segura
+    private void removeAttackFixture() {
+        if (attackFixture != null) {
+            b2body.destroyFixture(attackFixture);
+            attackFixture = null;  // Para evitar intentos de destrucción múltiples
+        }
+    }
+
 
     public TextureRegion getFrame(float dt) {
         currentState = getState();
@@ -139,24 +174,29 @@ public class Personaje extends Sprite {
                 break;
             case ATTACKING:
                 region = personajeAttacking.getKeyFrame(stateTimer, false);  // 'false' para que no se repita la animación
-                if (personajeAttacking.isAnimationFinished(stateTimer)) {
-                    isAttacking = false;            // Cuando termine la animación, desactiva el ataque
-                    currentState = State.STANDIND;  // Vuelve al estado STANDIND
-                }
+
+//                if (personajeAttacking.isAnimationFinished(stateTimer)) {
+//                    isAttacking = false;            // Cuando termine la animación, desactiva el ataque
+//                    currentState = State.STANDIND;  // Vuelve al estado STANDIND
+//                    world.destroyBody(bodyAttack);
+//                }
                 break;
             case ATTACKCROUCH:
                 region = personajeAttackCrouch.getKeyFrame(stateTimer);
-                if (personajeAttackCrouch.isAnimationFinished(stateTimer)) {
-                    isAttacking = false;            // Cuando termine la animación, desactiva el ataque
-                    currentState = State.CROUCHING;  // Vuelve al estado STANDIND
-                }
+//                if (personajeAttackCrouch.isAnimationFinished(stateTimer)) {
+//                    isAttacking = false;            // Cuando termine la animación, desactiva el ataque
+//                    currentState = State.CROUCHING;  // Vuelve al estado STANDIND
+//                    world.destroyBody(bodyAttack);
+//                }
                 break;
             case JUMPATTACK:
                 region = personajeJumpAttack.getKeyFrame(stateTimer);
-                if (personajeJumpAttack.isAnimationFinished(stateTimer)) {
-                    isJumpAttack = false;
-                    currentState = State.FALLING;
-                }
+
+//                if (personajeJumpAttack.isAnimationFinished(stateTimer)) {
+//                    isJumpAttack = false;
+//                    currentState = State.FALLING;
+//                    world.destroyBody(bodyAttack);
+//                }
 
                 break;
             case STANDIND:
@@ -210,18 +250,52 @@ public class Personaje extends Sprite {
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
+
         FixtureDef fdef = new FixtureDef();
+
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(10 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
-
         fdef.shape = shape;
         b2body.createFixture(fdef);
 
-        //TODO Añadir sensor en la cabeza (Luego lo necesito para Añadir sensor en el ataque con booleanas)
-        EdgeShape head = new EdgeShape();
-        head.set(new Vector2(-10 / MarioBros.PPM, 23 / MarioBros.PPM), new Vector2(10 / MarioBros.PPM, 23 / MarioBros.PPM));
-        fdef.shape = head;
-        fdef.isSensor = true;
-        b2body.createFixture(fdef).setUserData("head");
+
     }
+
+    private Fixture attackFixture; // Guardar la referencia de la fixture
+
+    public void hitBoxAtaque() {
+        if (attackFixture != null) {
+            b2body.destroyFixture(attackFixture); // Eliminar si ya existe
+            attackFixture = null;
+        }
+
+        FixtureDef fdef = new FixtureDef();
+        PolygonShape attack = new PolygonShape();
+
+        if (isAttacking || isJumpAttack || currentState==State.ATTACKCROUCH) {
+            if(runningRight){
+
+            attack.set(new Vector2[]{
+                new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
+                new Vector2(56 / MarioBros.PPM, -5 / MarioBros.PPM),
+                new Vector2(45 / MarioBros.PPM, 10 / MarioBros.PPM),
+                new Vector2(0 / MarioBros.PPM, 23 / MarioBros.PPM)
+            });
+            }else{
+                attack.set(new Vector2[]{
+                    new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
+                    new Vector2(-56 / MarioBros.PPM, -5 / MarioBros.PPM),
+                    new Vector2(-45 / MarioBros.PPM, 10 / MarioBros.PPM),
+                    new Vector2(0 / MarioBros.PPM, 23 / MarioBros.PPM)
+                });
+            }
+
+            fdef.shape = attack;
+            fdef.isSensor = true;
+            attackFixture = b2body.createFixture(fdef); // Guardamos la fixture
+            attackFixture.setUserData("attack");
+        }
+    }
+
+
 }

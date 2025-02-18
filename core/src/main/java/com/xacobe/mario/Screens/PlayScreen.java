@@ -91,21 +91,26 @@ public class PlayScreen implements Screen {
             Personaje.isJumpAttack = true;
             Personaje.stateTimer = 0;
             personaje.b2body.applyLinearImpulse(new Vector2(1f, 0), personaje.b2body.getWorldCenter(), true);
+            personaje.hitBoxAtaque();
+
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q) && personaje.b2body.getLinearVelocity().y > 0 && !personaje.runningRight) {
             Personaje.isJumpAttack = true;
             Personaje.stateTimer = 0;
             personaje.b2body.applyLinearImpulse(new Vector2(-1f, 0), personaje.b2body.getWorldCenter(), true);
+            personaje.hitBoxAtaque();
 
             //Atacar agachado
         } else if (Gdx.input.isKeyPressed(Input.Keys.Q) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             Personaje.isAttacking = true;
             Personaje.iscrouching = true;
             Personaje.stateTimer = 0;
+            personaje.hitBoxAtaque();
 
             //Atacar
         } else if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
             Personaje.stateTimer = 0;
             Personaje.isAttacking = true;
+            personaje.hitBoxAtaque();
 
             //Movimiento normal
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP) && personaje.b2body.getLinearVelocity().y == 0) {
