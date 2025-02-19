@@ -1,15 +1,7 @@
 package com.xacobe.mario;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.xacobe.mario.Screens.PlayScreen;
 
 /**
@@ -19,6 +11,11 @@ public class MarioBros extends Game {
     public static final int V_WIDTH =700;
     public static final int V_HEIGHT = 368;
     public static  final float PPM=100;
+
+    //Colision bits
+    public static final short GROUND_BIT =1;
+    public static final short PERSONAJE_BIT=2;
+    public static final short ENEMY_BIT=4;
     public SpriteBatch batch;
 
     @Override

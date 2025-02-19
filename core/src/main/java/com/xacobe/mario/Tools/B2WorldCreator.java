@@ -1,5 +1,6 @@
 package com.xacobe.mario.Tools;
 
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -13,10 +14,13 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.xacobe.mario.MarioBros;
+import com.xacobe.mario.Screens.PlayScreen;
 import com.xacobe.mario.Sprites.Personaje;
 
 public class B2WorldCreator {
-    public B2WorldCreator(World world, TiledMap map) {
+    public B2WorldCreator(PlayScreen screen) {
+        World world = screen.getWorld();
+        TiledMap map = screen.getMap();
         BodyDef bdef = new BodyDef();
         PolygonShape shape = new PolygonShape();
         FixtureDef fded = new FixtureDef();
@@ -34,6 +38,7 @@ public class B2WorldCreator {
             shape.setAsBox(rec.getWidth() / 2 / MarioBros.PPM, rec.getHeight() / 2 / MarioBros.PPM);
             fded.shape = shape;
             body.createFixture(fded);
+            fded.filter.categoryBits = MarioBros.GROUND_BIT;
         }
 
         //Suelo Rampa Poligono

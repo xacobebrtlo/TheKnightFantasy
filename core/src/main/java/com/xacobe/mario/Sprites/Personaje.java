@@ -3,12 +3,9 @@ package com.xacobe.mario.Sprites;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -16,8 +13,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
-
-import java.awt.geom.RectangularShape;
 
 public class Personaje extends Sprite {
     public enum State {FALLING, JUMPING, STANDIND, RUNNING, CROUCHING, ATTACKING, ATTACKCROUCH, JUMPATTACK}
@@ -44,9 +39,9 @@ public class Personaje extends Sprite {
     public boolean runningRight;
 
     //Mi personaje es de 50*50
-    public Personaje(World world, PlayScreen screen) {
+    public Personaje(PlayScreen screen) {
         super(screen.getAtlas().findRegion("attack"));
-        this.world = world;
+        this.world = screen.getWorld();
         currentState = State.STANDIND;
         previusState = State.STANDIND;
         stateTimer = 0;
@@ -255,6 +250,9 @@ public class Personaje extends Sprite {
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(10 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
+        fdef.filter.categoryBits = MarioBros.PERSONAJE_BIT;
+        fdef.filter.maskBits=MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT;
+
         fdef.shape = shape;
         b2body.createFixture(fdef);
 
@@ -272,16 +270,16 @@ public class Personaje extends Sprite {
         FixtureDef fdef = new FixtureDef();
         PolygonShape attack = new PolygonShape();
 
-        if (isAttacking || isJumpAttack || currentState==State.ATTACKCROUCH) {
-            if(runningRight){
+        if (isAttacking || isJumpAttack || currentState == State.ATTACKCROUCH) {
+            if (runningRight) {
 
-            attack.set(new Vector2[]{
-                new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
-                new Vector2(56 / MarioBros.PPM, -5 / MarioBros.PPM),
-                new Vector2(45 / MarioBros.PPM, 10 / MarioBros.PPM),
-                new Vector2(0 / MarioBros.PPM, 23 / MarioBros.PPM)
-            });
-            }else{
+                attack.set(new Vector2[]{
+                    new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
+                    new Vector2(56 / MarioBros.PPM, -5 / MarioBros.PPM),
+                    new Vector2(45 / MarioBros.PPM, 10 / MarioBros.PPM),
+                    new Vector2(0 / MarioBros.PPM, 23 / MarioBros.PPM)
+                });
+            } else {
                 attack.set(new Vector2[]{
                     new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
                     new Vector2(-56 / MarioBros.PPM, -5 / MarioBros.PPM),
@@ -293,7 +291,7 @@ public class Personaje extends Sprite {
             fdef.shape = attack;
             fdef.isSensor = true;
             attackFixture = b2body.createFixture(fdef); // Guardamos la fixture
-            attackFixture.setUserData("attack");
+            attackFixture.setUserData("sword");
         }
     }
 

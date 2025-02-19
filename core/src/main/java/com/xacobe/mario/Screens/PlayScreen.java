@@ -29,6 +29,8 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Scenes.Hud;
+import com.xacobe.mario.Sprites.Enemy;
+import com.xacobe.mario.Sprites.NoShurikenDude;
 import com.xacobe.mario.Sprites.Personaje;
 import com.xacobe.mario.Tools.B2WorldCreator;
 import com.xacobe.mario.Tools.WorldContactListener;
@@ -49,6 +51,7 @@ public class PlayScreen implements Screen {
     private Box2DDebugRenderer b2dr;
 
     private Personaje personaje;
+    private NoShurikenDude noShurikenDude;
 
     public PlayScreen(MarioBros game) {
         atlas = new TextureAtlas("personaje_y_enemigos.atlas");
@@ -64,10 +67,12 @@ public class PlayScreen implements Screen {
         gamecam.position.set(gameport.getWorldWidth() / 2, gameport.getWorldHeight() / 2, 0);
         world = new World(new Vector2(0, -9.8f), true);
         b2dr = new Box2DDebugRenderer();
-        new B2WorldCreator(world, map);
-        personaje = new Personaje(world, this);
+        new B2WorldCreator(this);
+        personaje = new Personaje(this);
 
         world.setContactListener(new WorldContactListener());
+//        noShurikenDude=new NoShurikenDude(this,71 / MarioBros.PPM, 50 / MarioBros.PPM);
+        noShurikenDude=new NoShurikenDude(this,.32f, .32f);
     }
 
     public TextureAtlas getAtlas() {
@@ -126,10 +131,12 @@ public class PlayScreen implements Screen {
 
     }
 
+
     public void update(float dt) {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
         personaje.update(dt);
+        noShurikenDude.update(dt);
 
         gamecam.position.x = personaje.b2body.getPosition().x;
         gamecam.update();
@@ -150,6 +157,7 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
         personaje.draw(game.batch);
+        noShurikenDude.draw(game.batch);
         game.batch.end();
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -160,6 +168,13 @@ public class PlayScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         gameport.update(width, height);
+    }
+
+    public TiledMap getMap() {
+        return  map;
+    }
+    public World getWorld(){
+        return world;
     }
 
     @Override
