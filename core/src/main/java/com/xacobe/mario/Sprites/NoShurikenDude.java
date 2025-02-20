@@ -23,10 +23,10 @@ public class NoShurikenDude extends Enemy {
         super(screen, x, y);
         Array<TextureRegion> frames = new Array<TextureRegion>();
         for (int i = 0; i < 9; i++) {
-            frames.add(new TextureRegion(screen.getAtlas().findRegion("attack"), (i * 71)-25, 285, 71, 55));
+            frames.add(new TextureRegion(screen.getAtlas().findRegion("attack"), (i * 80)-25, 285, 71, 55));
             attackAnimation = new Animation<TextureRegion>(0.1f, frames);
             Statetimer = 0;
-            setBounds(getX(), getY(), 71 / MarioBros.PPM, 55 / MarioBros.PPM);
+            setBounds(getX(), getY(), 71 / MarioBros.PPM, 58/ MarioBros.PPM);
 
         }
     }
@@ -35,7 +35,7 @@ public class NoShurikenDude extends Enemy {
         Statetimer += dt;
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y / getHeight() / 2);
         setRegion(attackAnimation.getKeyFrame(Statetimer, true));
-        defineEnemy();
+
     }
 
     @Override
