@@ -16,6 +16,7 @@ public class MarioBros extends Game {
     public static final short GROUND_BIT =1;
     public static final short PERSONAJE_BIT=2;
     public static final short ENEMY_BIT=4;
+    public static final short ATTACK_BIT=8;
     public SpriteBatch batch;
 
     @Override

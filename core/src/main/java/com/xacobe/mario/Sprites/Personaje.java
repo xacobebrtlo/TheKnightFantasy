@@ -290,6 +290,7 @@ public class Personaje extends Sprite {
 
             fdef.shape = attack;
             fdef.isSensor = true;
+            fdef.filter.categoryBits=MarioBros.ATTACK_BIT;
             attackFixture = b2body.createFixture(fdef); // Guardamos la fixture
             attackFixture.setUserData("sword");
         }

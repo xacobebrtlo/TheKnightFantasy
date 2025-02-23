@@ -54,7 +54,9 @@ public class B2WorldCreator {
             fixtureDef.shape = convertPolygonToPolygonShape(polygon, MarioBros.PPM);
             fixtureDef.friction = 0f;
             bodyPol.createFixture(fixtureDef);
+            fixtureDef.filter.categoryBits = MarioBros.GROUND_BIT;
         }
+
     }
 
     // chatgpt (revisar y entender)
