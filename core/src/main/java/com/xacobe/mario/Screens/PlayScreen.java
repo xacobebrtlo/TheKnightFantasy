@@ -1,35 +1,21 @@
 package com.xacobe.mario.Screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PolygonMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.xacobe.mario.MarioBros;
+import com.xacobe.mario.Scenes.Controles;
 import com.xacobe.mario.Scenes.Hud;
-import com.xacobe.mario.Sprites.Enemy;
 import com.xacobe.mario.Sprites.NoShurikenDude;
 import com.xacobe.mario.Sprites.Personaje;
 import com.xacobe.mario.Tools.B2WorldCreator;
@@ -53,6 +39,10 @@ public class PlayScreen implements Screen {
     private Personaje personaje;
     private NoShurikenDude noShurikenDude;
 
+    //Teclas y botones
+    private Controles controles;
+
+
     public PlayScreen(MarioBros game) {
         atlas = new TextureAtlas("personaje_y_enemigos.atlas");
         this.game = game;
@@ -70,9 +60,15 @@ public class PlayScreen implements Screen {
         new B2WorldCreator(this);
         personaje = new Personaje(this);
 
+        //Inicializar teclas
+//        controlbuttons = new ControlButtons(game.batch);
+//        teclas = new Teclas();
+        controles = new Controles(game.batch);
+
         world.setContactListener(new WorldContactListener());
-//        noShurikenDude=new NoShurikenDude(this,71 / MarioBros.PPM, 50 / MarioBros.PPM);
-        noShurikenDude=new NoShurikenDude(this,.32f, .32f);
+
+        //noShurikenDude=new NoShurikenDude(this,71 / MarioBros.PPM, 50 / MarioBros.PPM);
+        noShurikenDude = new NoShurikenDude(this, 32 / MarioBros.PPM, 170 / MarioBros.PPM);
     }
 
     public TextureAtlas getAtlas() {
@@ -92,42 +88,53 @@ public class PlayScreen implements Screen {
 //        } else
 
         //Atacar saltando
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q) && personaje.b2body.getLinearVelocity().y > 0 && personaje.runningRight) {
+        if (controles.isAttackPressed() && personaje.b2body.getLinearVelocity().y > 0 && personaje.runningRight) {
             Personaje.isJumpAttack = true;
             Personaje.stateTimer = 0;
-            personaje.b2body.applyLinearImpulse(new Vector2(1f, 0), personaje.b2body.getWorldCenter(), true);
+//            personaje.b2body.applyLinearImpulse(new Vector2(1f, 0), personaje.b2body.getWorldCenter(), true);
             personaje.hitBoxAtaque();
 
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q) && personaje.b2body.getLinearVelocity().y > 0 && !personaje.runningRight) {
+        } else if (controles.isAttackPressed() && personaje.b2body.getLinearVelocity().y > 0 && !personaje.runningRight) {
             Personaje.isJumpAttack = true;
             Personaje.stateTimer = 0;
-            personaje.b2body.applyLinearImpulse(new Vector2(-1f, 0), personaje.b2body.getWorldCenter(), true);
+//            personaje.b2body.applyLinearImpulse(new Vector2(-1f, 0), personaje.b2body.getWorldCenter(), true);
             personaje.hitBoxAtaque();
 
             //Atacar agachado
-        } else if (Gdx.input.isKeyPressed(Input.Keys.Q) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+        } else if (controles.isAttackPressed() && controles.isCrouching()) {
             Personaje.isAttacking = true;
             Personaje.iscrouching = true;
             Personaje.stateTimer = 0;
             personaje.hitBoxAtaque();
 
             //Atacar
-        } else if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+        } else if (controles.isAttackPressed()) {
+            personaje.b2body.applyLinearImpulse(new Vector2(0, 0), personaje.b2body.getWorldCenter(), true);
             Personaje.stateTimer = 0;
             Personaje.isAttacking = true;
             personaje.hitBoxAtaque();
 
             //Movimiento normal
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP) && personaje.b2body.getLinearVelocity().y == 0) {
+        } else if (controles.isJumpPressed() && personaje.b2body.getLinearVelocity().y == 0) {
             personaje.b2body.applyLinearImpulse(new Vector2(0, 4f), personaje.b2body.getWorldCenter(), true);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && personaje.b2body.getLinearVelocity().x <= 2) {
+        } else if (controles.isMoveRight() && personaje.b2body.getLinearVelocity().x <= 2) {
             personaje.b2body.applyLinearImpulse(new Vector2(0.1f, 0), personaje.b2body.getWorldCenter(), true);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && personaje.b2body.getLinearVelocity().x >= -2) {
+        } else if (controles.isMoveLeft() && personaje.b2body.getLinearVelocity().x >= -2) {
             personaje.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), personaje.b2body.getWorldCenter(), true);
         }
+        Personaje.iscrouching = controles.isCrouching();
+//
+//        if (controles.isMoveRight()) {
+//            personaje.b2body.setLinearVelocity(2, personaje.b2body.getLinearVelocity().y);
+//        } else if (controles.isMoveLeft()) {
+//            personaje.b2body.setLinearVelocity(-2, personaje.b2body.getLinearVelocity().y);
+//        } else {
+//            personaje.b2body.setLinearVelocity(0, personaje.b2body.getLinearVelocity().y);
+//        }
+
 
 //        Personaje.isAttacking = Gdx.input.isTouched();
-        Personaje.iscrouching = Gdx.input.isKeyPressed(Input.Keys.DOWN);
+//        Personaje.iscrouching = Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
     }
 
@@ -136,7 +143,10 @@ public class PlayScreen implements Screen {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
         personaje.update(dt);
-        noShurikenDude.update(dt);
+        if (!noShurikenDude.destroyed) {
+            noShurikenDude.update(dt);
+
+        }
 
         gamecam.position.x = personaje.b2body.getPosition().x;
         gamecam.update();
@@ -157,8 +167,15 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
         personaje.draw(game.batch);
+        if (!noShurikenDude.destroyed) {
         noShurikenDude.draw(game.batch);
+        }
         game.batch.end();
+
+        //Dibujar teclas
+//        teclas.stage.draw();
+        controles.update();
+        controles.render(game.batch);
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
@@ -168,12 +185,15 @@ public class PlayScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         gameport.update(width, height);
+        controles.resize(width, height);
     }
 
+
     public TiledMap getMap() {
-        return  map;
+        return map;
     }
-    public World getWorld(){
+
+    public World getWorld() {
         return world;
     }
 

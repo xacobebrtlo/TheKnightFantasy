@@ -26,6 +26,19 @@ public class B2WorldCreator {
         FixtureDef fded = new FixtureDef();
         Body body;
 
+//        for (MapObject object : map.getLayers().get(7).getObjects().getByType(RectangleMapObject.class)) {
+//            Rectangle rec = ((RectangleMapObject) object).getRectangle();
+//            bdef.type = BodyDef.BodyType.StaticBody;
+//            bdef.position.set((rec.getX() + rec.getWidth() / 2) / MarioBros.PPM, (rec.getY() + rec.getHeight() / 2) / MarioBros.PPM);
+//            fded.isSensor = true;
+//
+//            body = world.createBody(bdef);
+//            shape.setAsBox(rec.getWidth() / 2 / MarioBros.PPM, rec.getHeight() / 2 / MarioBros.PPM);
+//            fded.shape = shape;
+//            body.createFixture(fded);
+//            fded.filter.categoryBits = MarioBros.GROUND_BIT;
+//        }
+
 
         //Suelo Rectangulos
         for (MapObject object : map.getLayers().get(5).getObjects().getByType(RectangleMapObject.class)) {

@@ -21,9 +21,8 @@ public class WorldContactListener implements ContactListener {
         if (fixA.getUserData() == "sword" || fixb.getUserData() == "sword") {
             Fixture sword = fixA.getUserData() == "sword" ? fixA : fixb;
             Fixture object = sword == fixA ? fixb : fixA;
-            if (object.getUserData() != null && InteractiveTileObject.class.isAssignableFrom(object.getUserData().getClass())) {
-                ((InteractiveTileObject) object.getUserData()).onSwordHit();
-
+            if (object.getUserData() != null && object.getUserData() instanceof Enemy) {
+                ((Enemy) object.getUserData()).hitOnSword();
             }
         }
         switch (cDef) {
