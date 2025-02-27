@@ -49,12 +49,11 @@ public class NoShurikenDude extends Enemy {
 
     public void update(float dt) {
         Statetimer += dt;
+
         //Destruyo el body del enemigo y su imagen
         if (setToDestroy && !destroyed && b2body.getLinearVelocity().x == 0) {
             world.destroyBody(b2body);
-//            b2body.destroyFixture(fixture);
             destroyed = true;
-            setRegion(attackAnimation.getKeyFrame(0));
         }
 
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y / getHeight() / 2);
@@ -63,20 +62,10 @@ public class NoShurikenDude extends Enemy {
         if (!destroyed) {
 
             setRegion(attackAnimation.getKeyFrame(Statetimer, true));
+
+        } else {
+            setRegion(attackAnimation.getKeyFrame(0));
         }
-//        if (attackAnimation.isAnimationFinished(Statetimer)) {
-////                estatico = true;
-//            setRegion(Staticanimation.getKeyFrame(Statetimer));
-////                setRegion(attackAnimation.getKeyFrame(Statetimer));
-////            attackAnimation.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
-//        }
-
-
-//        if (estatico) {
-//            setRegion(Staticanimation.getKeyFrame(Statetimer, true));
-//            estatico = false;
-//        }
-
 
     }
 
@@ -99,7 +88,7 @@ public class NoShurikenDude extends Enemy {
         b2body.createFixture(fdef).setUserData(this);
 
         //Crear cuerpo
-        Rectangle cuerpo = new Rectangle();
+
         fixture = b2body.createFixture(fdef);
     }
 
@@ -109,11 +98,57 @@ public class NoShurikenDude extends Enemy {
         setColor(new Color(Color.RED));
         if (b2body.getLinearVelocity().y == 0 && b2body.getLinearVelocity().x == 0) {
             b2body.applyLinearImpulse(new Vector2(0.5f, 0.8f), b2body.getWorldCenter(), true);
-
         }
 
+        removeAttackFixture();
         setToDestroy = true;
     }
+
+    private Fixture attackFixture;
+
+    public void ataqueEnemigo() {
+        if (attackFixture != null) {
+            b2body.destroyFixture(attackFixture); // Eliminar si ya existe
+            attackFixture = null;
+        }
+
+        FixtureDef fdef = new FixtureDef();
+        PolygonShape attack = new PolygonShape();
+
+
+//        if (runningRight) {
+
+        attack.set(new Vector2[]{
+            new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
+            new Vector2(56 / MarioBros.PPM, -5 / MarioBros.PPM),
+            new Vector2(45 / MarioBros.PPM, 10 / MarioBros.PPM),
+            new Vector2(0 / MarioBros.PPM, 23 / MarioBros.PPM)
+        });
+//        }
+//        else {
+//            attack.set(new Vector2[]{
+//                new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
+//                new Vector2(-56 / MarioBros.PPM, -5 / MarioBros.PPM),
+//                new Vector2(-45 / MarioBros.PPM, 10 / MarioBros.PPM),
+//                new Vector2(0 / MarioBros.PPM, 23 / MarioBros.PPM)
+//            });
+//        }
+
+        fdef.shape = attack;
+        fdef.isSensor = true;
+        fdef.filter.categoryBits = MarioBros.ATTACK_BIT;
+        attackFixture = b2body.createFixture(fdef); // Guardamos la fixture
+        attackFixture.setUserData("ataqueEnemigo");
+
+    }
+
+    private void removeAttackFixture() {
+        if (attackFixture != null) {
+            attackFixture = null;  // Para evitar intentos de destrucción múltiples
+            setToDestroy = true;
+        }
+    }
+
 
     @Override
     public void onSwordHit() {

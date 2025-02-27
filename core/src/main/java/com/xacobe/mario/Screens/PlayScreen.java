@@ -61,13 +61,10 @@ public class PlayScreen implements Screen {
         personaje = new Personaje(this);
 
         //Inicializar teclas
-//        controlbuttons = new ControlButtons(game.batch);
-//        teclas = new Teclas();
         controles = new Controles(game.batch);
 
         world.setContactListener(new WorldContactListener());
 
-        //noShurikenDude=new NoShurikenDude(this,71 / MarioBros.PPM, 50 / MarioBros.PPM);
         noShurikenDude = new NoShurikenDude(this, 32 / MarioBros.PPM, 170 / MarioBros.PPM);
     }
 
@@ -82,22 +79,15 @@ public class PlayScreen implements Screen {
 
     public void handleInput(float dt) {
 
-//        if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-//        Personaje.isAttacking=true;
-//        Personaje.iscrouching=true;
-//        } else
-
         //Atacar saltando
         if (controles.isAttackPressed() && personaje.b2body.getLinearVelocity().y > 0 && personaje.runningRight) {
             Personaje.isJumpAttack = true;
             Personaje.stateTimer = 0;
-//            personaje.b2body.applyLinearImpulse(new Vector2(1f, 0), personaje.b2body.getWorldCenter(), true);
             personaje.hitBoxAtaque();
 
         } else if (controles.isAttackPressed() && personaje.b2body.getLinearVelocity().y > 0 && !personaje.runningRight) {
             Personaje.isJumpAttack = true;
             Personaje.stateTimer = 0;
-//            personaje.b2body.applyLinearImpulse(new Vector2(-1f, 0), personaje.b2body.getWorldCenter(), true);
             personaje.hitBoxAtaque();
 
             //Atacar agachado
@@ -117,24 +107,14 @@ public class PlayScreen implements Screen {
             //Movimiento normal
         } else if (controles.isJumpPressed() && personaje.b2body.getLinearVelocity().y == 0) {
             personaje.b2body.applyLinearImpulse(new Vector2(0, 4f), personaje.b2body.getWorldCenter(), true);
-        } else if (controles.isMoveRight() && personaje.b2body.getLinearVelocity().x <= 2) {
-            personaje.b2body.applyLinearImpulse(new Vector2(0.1f, 0), personaje.b2body.getWorldCenter(), true);
-        } else if (controles.isMoveLeft() && personaje.b2body.getLinearVelocity().x >= -2) {
-            personaje.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), personaje.b2body.getWorldCenter(), true);
+        } else if (controles.isMoveRight()) {
+            personaje.b2body.setLinearVelocity(1.8f, personaje.b2body.getLinearVelocity().y);
+        } else if (controles.isMoveLeft()) {
+            personaje.b2body.setLinearVelocity(-1.8f, personaje.b2body.getLinearVelocity().y);
+        } else {
+            personaje.b2body.setLinearVelocity(0, personaje.b2body.getLinearVelocity().y);
         }
         Personaje.iscrouching = controles.isCrouching();
-//
-//        if (controles.isMoveRight()) {
-//            personaje.b2body.setLinearVelocity(2, personaje.b2body.getLinearVelocity().y);
-//        } else if (controles.isMoveLeft()) {
-//            personaje.b2body.setLinearVelocity(-2, personaje.b2body.getLinearVelocity().y);
-//        } else {
-//            personaje.b2body.setLinearVelocity(0, personaje.b2body.getLinearVelocity().y);
-//        }
-
-
-//        Personaje.isAttacking = Gdx.input.isTouched();
-//        Personaje.iscrouching = Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
     }
 
@@ -145,9 +125,8 @@ public class PlayScreen implements Screen {
         personaje.update(dt);
         if (!noShurikenDude.destroyed) {
             noShurikenDude.update(dt);
-
+//            noShurikenDude.ataqueEnemigo();
         }
-
         gamecam.position.x = personaje.b2body.getPosition().x;
         gamecam.update();
         renderer.setView(gamecam);
@@ -168,12 +147,11 @@ public class PlayScreen implements Screen {
         game.batch.begin();
         personaje.draw(game.batch);
         if (!noShurikenDude.destroyed) {
-        noShurikenDude.draw(game.batch);
+            noShurikenDude.draw(game.batch);
         }
         game.batch.end();
 
         //Dibujar teclas
-//        teclas.stage.draw();
         controles.update();
         controles.render(game.batch);
 
