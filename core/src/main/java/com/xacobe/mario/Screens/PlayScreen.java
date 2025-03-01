@@ -11,6 +11,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.xacobe.mario.MarioBros;
@@ -74,8 +75,23 @@ public class PlayScreen implements Screen {
 
     @Override
     public void show() {
-
+        // Programamos una tarea que se ejecute 4 segundos después y luego cada 4 segundos
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (!noShurikenDude.destroyed) {
+                    // Activamos el ataque solo si el enemigo sigue vivo
+                    noShurikenDude.isAttacking = true;
+                    noShurikenDude.ataqueEnemigo();
+                } else {
+                    // Si el enemigo ya ha sido destruido, cancelamos la tarea
+                    this.cancel();
+                }
+            }
+        }, 1, 4);
     }
+
+
 
     public void handleInput(float dt) {
 

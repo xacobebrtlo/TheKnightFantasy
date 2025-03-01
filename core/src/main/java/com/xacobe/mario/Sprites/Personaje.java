@@ -1,5 +1,6 @@
 package com.xacobe.mario.Sprites;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -251,10 +252,14 @@ public class Personaje extends Sprite {
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(10 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
         fdef.filter.categoryBits = MarioBros.PERSONAJE_BIT;
-        fdef.filter.maskBits=MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT;
+        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ENEMYATTACK_BIT;
+
 
         fdef.shape = shape;
-        b2body.createFixture(fdef);
+        Fixture fixture = b2body.createFixture(fdef);
+        fixture.setUserData(this);
+//        b2body.createFixture(fdef);
+
 
 
     }
@@ -295,6 +300,12 @@ public class Personaje extends Sprite {
             attackFixture.setUserData("sword");
         }
     }
+public void onEnemyHit(){//TODO corregir coliscion dos ataques a la vez y que se deje de poner rojo en el tiomer
+    System.out.println("Enemi hit");
 
+    setColor(new Color(Color.RED));
+        b2body.applyLinearImpulse(new Vector2(0.5f, 0.8f), b2body.getWorldCenter(), true);
+
+}
 
 }
