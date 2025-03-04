@@ -19,18 +19,14 @@ public class Hud implements Disposable {
     public Stage stage;
     private Viewport viewport;
 
-    // Elementos del HUD (excepto la parte de vidas)
-    Label countdownLabel;
-    Label scoreLabel;
+    // Elementos del HUD (para tiempo)
     Label timeLabel;
-    Label levelLabel;
-    Label worldLabel;
+    Label countdownLabel;
 
     private Integer worldTimer;
     private float timeCount;
-    private Integer score;
 
-    // Atlas y regiones para la vida
+    // Atlas y regiones para la vida (corazones)
     private TextureAtlas atlas;
     private TextureRegion heartFull, heartHalf, heartEmpty;
 
@@ -39,44 +35,51 @@ public class Hud implements Disposable {
     private int currentLives = 3;
 
     public Hud(SpriteBatch sb) {
-        // Carga el atlas
+        // Carga el atlas y extrae la región "corazonesVida"
         atlas = new TextureAtlas("Demon_and_Health.atlas");
-        // Extrae la región "corazonesVida"
         TextureRegion heartsRegion = atlas.findRegion("corazonesVida");
         if (heartsRegion == null) {
             Gdx.app.error("Hud", "No se encontró la región 'corazonesVida'");
         }
         // Suponemos que la región se divide en 3 partes iguales horizontalmente
-        int frameWidth = heartsRegion.getRegionWidth() / 3; // 901/3 ≈ 300 píxeles
+        int frameWidth = heartsRegion.getRegionWidth() / 3; // Ej: 901/3 ≈ 300 píxeles
         int frameHeight = heartsRegion.getRegionHeight();   // 300 píxeles
         heartFull = new TextureRegion(heartsRegion, 0, 0, frameWidth, frameHeight);
         heartHalf = new TextureRegion(heartsRegion, frameWidth, 0, frameWidth, frameHeight);
         heartEmpty = new TextureRegion(heartsRegion, frameWidth * 2, 0, heartsRegion.getRegionWidth() - frameWidth * 2, frameHeight);
 
-        // Inicializa timer y score
+        // Inicializa timer (por ejemplo, 300 segundos)
         worldTimer = 300;
         timeCount = 0;
-        score = 0;
+
         viewport = new FitViewport(MarioBros.V_WIDTH, MarioBros.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, sb);
 
         Table table = new Table();
         table.top();
         table.setFillParent(true);
-
-        // En lugar de mostrar "MARIO", dejamos una celda en blanco en el lado izquierdo (donde luego dibujaremos los corazones)
+        // La tabla tendrá dos columnas:
+        // Primera columna: (vacía, donde se dibujarán los corazones manualmente)
+        // Segunda columna: para mostrar el tiempo
         table.add().expandX().padTop(10);
-        table.add(worldLabel = new Label("WORLD", new Label.LabelStyle(new BitmapFont(), Color.WHITE))).expandX().padTop(10);
         table.add(timeLabel = new Label("TIME", new Label.LabelStyle(new BitmapFont(), Color.WHITE))).expandX().padTop(10);
         table.row();
-        table.add(scoreLabel = new Label(String.format("%06d", score), new Label.LabelStyle(new BitmapFont(), Color.WHITE))).expandX();
-        table.add(levelLabel = new Label("1-1", new Label.LabelStyle(new BitmapFont(), Color.WHITE))).expandX();
+        table.add().expandX();
         table.add(countdownLabel = new Label(String.format("%03d", worldTimer), new Label.LabelStyle(new BitmapFont(), Color.WHITE))).expandX();
-
         stage.addActor(table);
     }
 
-    // Actualiza el número de vidas actuales
+    // Método para actualizar el timer; se llama cada frame desde PlayScreen
+    public void update(float dt) {
+        timeCount += dt;
+        if(timeCount >= 1) {
+            worldTimer--;
+            countdownLabel.setText(String.format("%03d", worldTimer));
+            timeCount = 0;
+        }
+    }
+
+    // Actualiza las vidas actuales (si las usas)
     public void updateLives(int lives) {
         currentLives = lives;
     }
@@ -84,21 +87,20 @@ public class Hud implements Disposable {
     // Dibuja los corazones en una posición fija en la parte izquierda del HUD
     public void drawLives(SpriteBatch batch) {
         float x = 10; // margen izquierdo
-        // Escala deseada, por ejemplo, la mitad del tamaño original
-        float scale = 0.2f;
+        // Escala deseada, por ejemplo, 0.2 para que sean más pequeños
+        float scale = 0.1f;
         float heartWidth = heartFull.getRegionWidth() * scale;
         float heartHeight = heartFull.getRegionHeight() * scale;
-        // Coloca los corazones en la parte superior con un margen
+        // Ubica los corazones en la parte superior, con un margen de 10 píxeles
         float y = MarioBros.V_HEIGHT - heartHeight - 10;
         for (int i = 0; i < totalLives; i++) {
-            if (i < currentLives) {
+            if(i < currentLives) {
                 batch.draw(heartFull, x + i * (heartWidth + 5), y, heartWidth, heartHeight);
             } else {
                 batch.draw(heartEmpty, x + i * (heartWidth + 5), y, heartWidth, heartHeight);
             }
         }
     }
-
 
     @Override
     public void dispose() {

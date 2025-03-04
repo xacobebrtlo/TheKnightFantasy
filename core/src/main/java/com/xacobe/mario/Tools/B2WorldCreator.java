@@ -17,14 +17,20 @@ import com.badlogic.gdx.utils.Array;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
 import com.xacobe.mario.Sprites.Cofres;
+import com.xacobe.mario.Sprites.Demon;
 import com.xacobe.mario.Sprites.NoShurikenDude;
 
 public class B2WorldCreator {
     public Array<NoShurikenDude> getNoshurikenDUdes() {
         return noshurikenDUdes;
     }
+    public Array<Demon> getDemons() {
+        return demons;
+    }
 
     private Array<NoShurikenDude> noshurikenDUdes;
+    private Array<Demon> demons;
+
 
     public B2WorldCreator(PlayScreen screen) {
         World world = screen.getWorld();
@@ -86,7 +92,7 @@ public class B2WorldCreator {
         }
 
         //Crear los cofres
-        MapLayer cofreLayer = screen.getMap().getLayers().get(8); // La capa 8, índice 7 (si las capas están indexadas desde 0)
+        MapLayer cofreLayer = screen.getMap().getLayers().get(8); // La capa 8
         for (MapObject object : cofreLayer.getObjects()) {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
             // Creamos un cofre en la posición del objeto, escalando a PPM:
@@ -94,6 +100,20 @@ public class B2WorldCreator {
 
 
         }
+
+        // Crea todos los DEMON desde la capa correspondiente
+        demons = new Array<Demon>();
+        {
+            // Ajusta el índice de la capa según tu Tiled. Por ejemplo, si la capa se llama "Demon" y es la 10ª capa, su índice podría ser 9.
+            MapLayer demonLayer = screen.getMap().getLayers().get(9);
+            for (MapObject object : demonLayer.getObjects().getByType(RectangleMapObject.class)) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                // Crea el Demon y lo añade al array
+                demons.add(new Demon(screen, rect.x / MarioBros.PPM, rect.y / MarioBros.PPM));
+            }
+        }
+
+
     }
 
     // chatgpt (revisar y entender)

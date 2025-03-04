@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Scenes.Controles;
 import com.xacobe.mario.Scenes.Hud;
+import com.xacobe.mario.Sprites.Demon;
 import com.xacobe.mario.Sprites.NoShurikenDude;
 import com.xacobe.mario.Sprites.Personaje;
 import com.xacobe.mario.Tools.B2WorldCreator;
@@ -46,17 +47,25 @@ public class PlayScreen implements Screen {
     //Teclas y botones
     private Controles controles;
 
+    private int mapNumber = 1;
 
-    public PlayScreen(MarioBros game) {
+    public PlayScreen(MarioBros game, int mapnumber) {
         atlas = new TextureAtlas("personaje_y_enemigos.atlas");
         this.game = game;
 
+        MarioBros.currentMapNumber = mapNumber;
         gamecam = new OrthographicCamera();
         gameport = new FitViewport(MarioBros.V_WIDTH / MarioBros.PPM, MarioBros.V_HEIGHT / MarioBros.PPM, gamecam);
         hud = new Hud(game.batch);
-
+        this.mapNumber = mapnumber;
+        String mapFile = "Magic_Cliffs_Fondo/Environment/TSX/level1.tmx";
+        if (mapNumber == 2) {
+            mapFile = "Old-dark-Castle-tileset-Files/TSX/level2.tmx";
+        } else if (mapNumber == 3) {
+            mapFile = "Magic_Cliffs_Fondo/Environment/TSX/level3.tmx";
+        }
         mapLoader = new TmxMapLoader();
-        map = mapLoader.load("Magic_Cliffs_Fondo/Environment/TSX/level1.tmx");
+        map = mapLoader.load(mapFile);
         renderer = new OrthogonalTiledMapRenderer(map, 1 / MarioBros.PPM);
         gamecam.position.set(gameport.getWorldWidth() / 2, gameport.getWorldHeight() / 2, 0);
         world = new World(new Vector2(0, -9.8f), true);
@@ -70,6 +79,10 @@ public class PlayScreen implements Screen {
         world.setContactListener(new WorldContactListener());
 
 
+    }
+
+    public PlayScreen(MarioBros game) {
+        this(game, MarioBros.currentMapNumber);
     }
 
     public TextureAtlas getAtlas() {
@@ -89,6 +102,13 @@ public class PlayScreen implements Screen {
                         noShurikenDude.isAttacking = true;
                         noShurikenDude.ataqueEnemigo();
                     }
+                }
+                for (Demon demon : creator.getDemons()) {
+                    if (!demon.destroyed) {
+                        demon.isAttacking = true;
+                        demon.ataqueEnemigo();
+                    }
+
                 }
 
             }
@@ -148,6 +168,10 @@ public class PlayScreen implements Screen {
                 noShurikenDude.update(dt);
             }
         }
+        // Actualiza los demon
+        for (Demon demon : creator.getDemons()) {
+            demon.update(dt);
+        }
 
         gamecam.position.x = personaje.b2body.getPosition().x;
         gamecam.update();
@@ -178,6 +202,15 @@ public class PlayScreen implements Screen {
 
         game.batch.end();
 
+
+        // Dibuja los demon
+        game.batch.setProjectionMatrix(gamecam.combined);
+        game.batch.begin();
+        for (Demon demon : creator.getDemons()) {
+            demon.draw(game.batch);
+        }
+        game.batch.end();
+
         //Dibujar teclas
         controles.update();
         controles.render(game.batch);
@@ -200,7 +233,7 @@ public class PlayScreen implements Screen {
     }
 
     public Boolean gameOver() {
-        return ((personaje.currentState == Personaje.State.DEAD || personaje.lives <= 0)&&personaje.getStateTimer()>1);
+        return ((personaje.currentState == Personaje.State.DEAD || personaje.lives <= 0) && personaje.getStateTimer() > 0.5f);
 
     }
 
