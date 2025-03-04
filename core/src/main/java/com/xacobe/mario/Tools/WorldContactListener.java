@@ -55,6 +55,7 @@ public class WorldContactListener implements ContactListener {
                     p.onEnemyHit();
                 }
                 break;
+                //caso 3 personaje choca contra enemigo
             case MarioBros.PERSONAJE_BIT | MarioBros.ENEMY_BIT:
                 if (fixA.getFilterData().categoryBits == MarioBros.PERSONAJE_BIT &&
                     fixA.getUserData() != null && fixA.getUserData() instanceof Personaje) {
@@ -70,8 +71,12 @@ public class WorldContactListener implements ContactListener {
             case MarioBros.PERSONAJE_BIT | MarioBros.COFRE_BIT:
                 if (fixA.getUserData() != null && fixA.getUserData() instanceof Personaje) {
                     ((Personaje) fixA.getUserData()).currentState = Personaje.State.DEAD;
+                    Personaje p = (Personaje) fixA.getUserData();
+                    p.lives=0;
                 } else if (fixB.getUserData() != null && fixB.getUserData() instanceof Personaje) {
                     ((Personaje) fixB.getUserData()).currentState = Personaje.State.DEAD;
+                    Personaje p = (Personaje) fixB.getUserData();
+                    p.lives=0;
                 }
                 break;
 
