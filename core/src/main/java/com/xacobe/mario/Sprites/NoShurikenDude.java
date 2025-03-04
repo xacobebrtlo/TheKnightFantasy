@@ -11,6 +11,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
 
@@ -25,7 +26,7 @@ public class NoShurikenDude extends Enemy {
     private float Statetimer;
     private Animation<TextureRegion> attackAnimation;
     Animation<TextureRegion> Staticanimation;
-    private boolean setToDestroy;
+    public boolean setToDestroy;
     public boolean destroyed;
     private boolean estatico;
    public boolean isAttacking = false;
@@ -85,33 +86,36 @@ public class NoShurikenDude extends Enemy {
     @Override
     protected void defineEnemy() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(getX(), getY());// TODO  tengo que poner eso, si lo pongo se cae  32 / MarioBros.PPM, 170 / MarioBros.PPM
+        bdef.position.set(getX(), getY());
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
-
         FixtureDef fdef = new FixtureDef();
-
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(13 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
+        shape.setAsBox(13 / MarioBros.PPM, 25 / MarioBros.PPM);
         fdef.filter.categoryBits = MarioBros.ENEMY_BIT;
-        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ATTACK_BIT|MarioBros.PERSONAJE_BIT;
+        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ATTACK_BIT | MarioBros.PERSONAJE_BIT;
 
+        // Aumentamos la densidad para que el enemigo tenga mucha masa
+        fdef.density = 1000f;
         fdef.shape = shape;
 
-        b2body.createFixture(fdef).setUserData(this);
+        Fixture enemyFixture = b2body.createFixture(fdef);
+        enemyFixture.setUserData(this);
 
-        //Crear cuerpo
-
-        fixture = b2body.createFixture(fdef);
+        // Si usas otro fixture, asegúrate de asignarle también la densidad o que no interfiera.
+        // Después, actualizamos la masa del cuerpo:
+        b2body.resetMassData();
+        shape.dispose();
     }
+
 
     public void hitOnSword() {
         // Cambia el color para indicar que fue golpeado
         setColor(new Color(Color.RED));
 
         if (b2body.getLinearVelocity().y == 0 && b2body.getLinearVelocity().x == 0) {
-            b2body.applyLinearImpulse(new Vector2(0.5f, 0.8f), b2body.getWorldCenter(), true);
+            b2body.applyLinearImpulse(new Vector2(50f, 100f), b2body.getWorldCenter(), true);
         }
 
 //        // Cancela la tarea programada para el ataque si existe
@@ -162,10 +166,19 @@ public class NoShurikenDude extends Enemy {
 
     private void removeAttackFixture() {
         if (attackFixture != null) {
-            b2body.destroyFixture(attackFixture);
-            attackFixture = null;  // Para evitar múltiples destrucciones
+            final Fixture fixtureToRemove = attackFixture;
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    if(fixtureToRemove.getBody() != null) {
+                        fixtureToRemove.getBody().destroyFixture(fixtureToRemove);
+                    }
+                }
+            }, 0.1f);
+            attackFixture = null;
         }
     }
+
 
 
     @Override

@@ -12,11 +12,12 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
 
 public class Personaje extends Sprite {
-    public enum State {FALLING, JUMPING, STANDIND, RUNNING, CROUCHING, ATTACKING, ATTACKCROUCH, JUMPATTACK}
+    public enum State {FALLING, JUMPING, STANDIND, RUNNING, CROUCHING, ATTACKING, ATTACKCROUCH, JUMPATTACK, DEAD}
 
     public State currentState;
     public State previusState;
@@ -35,6 +36,9 @@ public class Personaje extends Sprite {
     public static boolean isAttacking;
     public static boolean isJumpAttack;
 
+    // 3 vidas iniciales
+    public int lives = 3;
+    public boolean collidingWithEnemy = false;
 
     public static float stateTimer;
     public boolean runningRight;
@@ -115,8 +119,15 @@ public class Personaje extends Sprite {
 
 
     public void update(float dt) {
+        if(collidingWithEnemy) {
+            b2body.setLinearVelocity(0,0);
+        }
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         setRegion(getFrame(dt));
+        // Si el personaje cae por debajo de un cierto umbral, se marca como muerto
+        if (b2body.getPosition().y < -5) { // Ajusta este valor según tu mundo
+            currentState = State.DEAD;
+        }
 
         if (currentState == State.ATTACKING) {
             if (personajeAttacking.isAnimationFinished(stateTimer)) {
@@ -252,14 +263,13 @@ public class Personaje extends Sprite {
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(10 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
         fdef.filter.categoryBits = MarioBros.PERSONAJE_BIT;
-        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ENEMYATTACK_BIT;
+        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ENEMYATTACK_BIT|MarioBros.COFRE_BIT;
 
 
         fdef.shape = shape;
         Fixture fixture = b2body.createFixture(fdef);
         fixture.setUserData(this);
 //        b2body.createFixture(fdef);
-
 
 
     }
@@ -295,17 +305,36 @@ public class Personaje extends Sprite {
 
             fdef.shape = attack;
             fdef.isSensor = true;
-            fdef.filter.categoryBits=MarioBros.ATTACK_BIT;
+            fdef.filter.categoryBits = MarioBros.ATTACK_BIT;
             attackFixture = b2body.createFixture(fdef); // Guardamos la fixture
             attackFixture.setUserData("sword");
         }
     }
-public void onEnemyHit(){//TODO corregir coliscion dos ataques a la vez y que se deje de poner rojo en el tiomer
-    System.out.println("Enemi hit");
 
-    setColor(new Color(Color.RED));
-        b2body.applyLinearImpulse(new Vector2(0.5f, 0.8f), b2body.getWorldCenter(), true);
 
-}
+    public void onEnemyHit() {
+        System.out.println("Enemy hit");
+        // Cambia el color a rojo al ser golpeado
+        setColor(Color.RED);
+        // Decrementa la vida y, si llega a 0, cambia el estado a DEAD
+        lives--;
+
+        if (lives <= 0) {
+            b2body.applyLinearImpulse(new Vector2(-1f, 1f), b2body.getWorldCenter(), true);
+            currentState = State.DEAD;
+            // Aquí podrías cambiar de pantalla a Game Over
+        }
+        // Programa que, después de 0,5 segundos, se restaure el color normal (por ejemplo, blanco)
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                setColor(Color.WHITE);
+            }
+        }, 0.5f);
+    }
+
+    public Float getStateTimer() {
+        return stateTimer;
+    }
 
 }

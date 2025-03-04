@@ -2,6 +2,7 @@ package com.xacobe.mario.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -38,7 +39,9 @@ public class PlayScreen implements Screen {
     private Box2DDebugRenderer b2dr;
 
     private Personaje personaje;
-    private NoShurikenDude noShurikenDude;
+
+    private B2WorldCreator creator;
+
 
     //Teclas y botones
     private Controles controles;
@@ -58,7 +61,7 @@ public class PlayScreen implements Screen {
         gamecam.position.set(gameport.getWorldWidth() / 2, gameport.getWorldHeight() / 2, 0);
         world = new World(new Vector2(0, -9.8f), true);
         b2dr = new Box2DDebugRenderer();
-        new B2WorldCreator(this);
+        creator = new B2WorldCreator(this);
         personaje = new Personaje(this);
 
         //Inicializar teclas
@@ -66,31 +69,31 @@ public class PlayScreen implements Screen {
 
         world.setContactListener(new WorldContactListener());
 
-        noShurikenDude = new NoShurikenDude(this, 32 / MarioBros.PPM, 170 / MarioBros.PPM);
+
     }
 
     public TextureAtlas getAtlas() {
         return atlas;
     }
 
+    private Timer.Task enemyAttackTask;
+
     @Override
     public void show() {
         // Programamos una tarea que se ejecute 4 segundos después y luego cada 4 segundos
-        Timer.schedule(new Timer.Task() {
+        enemyAttackTask = Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                if (!noShurikenDude.destroyed) {
-                    // Activamos el ataque solo si el enemigo sigue vivo
-                    noShurikenDude.isAttacking = true;
-                    noShurikenDude.ataqueEnemigo();
-                } else {
-                    // Si el enemigo ya ha sido destruido, cancelamos la tarea
-                    this.cancel();
+                for (NoShurikenDude noShurikenDude : creator.getNoshurikenDUdes()) {
+                    if (!noShurikenDude.destroyed) {
+                        noShurikenDude.isAttacking = true;
+                        noShurikenDude.ataqueEnemigo();
+                    }
                 }
+
             }
         }, 1, 4);
     }
-
 
 
     public void handleInput(float dt) {
@@ -138,11 +141,14 @@ public class PlayScreen implements Screen {
     public void update(float dt) {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
+
         personaje.update(dt);
-        if (!noShurikenDude.destroyed) {
-            noShurikenDude.update(dt);
-//            noShurikenDude.ataqueEnemigo();
+        for (NoShurikenDude noShurikenDude : creator.getNoshurikenDUdes()) {
+            if (!noShurikenDude.destroyed) {
+                noShurikenDude.update(dt);
+            }
         }
+
         gamecam.position.x = personaje.b2body.getPosition().x;
         gamecam.update();
         renderer.setView(gamecam);
@@ -162,9 +168,14 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
         personaje.draw(game.batch);
-        if (!noShurikenDude.destroyed) {
-            noShurikenDude.draw(game.batch);
+
+
+        for (NoShurikenDude noShurikenDude : creator.getNoshurikenDUdes()) {
+            if (!noShurikenDude.destroyed) {
+                noShurikenDude.draw(game.batch);
+            }
         }
+
         game.batch.end();
 
         //Dibujar teclas
@@ -173,6 +184,23 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
+        // Actualizamos y dibujamos el HUD
+        hud.updateLives(personaje.lives); // Asumiendo que lives es una variable en Personaje
+        hud.stage.draw();
+        game.batch.begin();
+        hud.drawLives(game.batch);
+        game.batch.end();
+
+        if (gameOver()) {
+            game.setScreen(new GameOverScreen(game));
+            dispose();
+
+        }
+
+    }
+
+    public Boolean gameOver() {
+        return ((personaje.currentState == Personaje.State.DEAD || personaje.lives <= 0)&&personaje.getStateTimer()>1);
 
     }
 
@@ -203,11 +231,14 @@ public class PlayScreen implements Screen {
 
     @Override
     public void hide() {
-
+        if (enemyAttackTask != null) {
+            enemyAttackTask.cancel();
+        }
     }
 
     @Override
     public void dispose() {
+
         map.dispose();
         renderer.dispose();
         world.dispose();

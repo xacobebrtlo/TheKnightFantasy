@@ -36,5 +36,6 @@ public abstract class InteractiveTileObject {
         fixture = body.createFixture(fdef);
 
     }
-    public abstract void onSwordHit();
+
+    public abstract void onTouch();
 }

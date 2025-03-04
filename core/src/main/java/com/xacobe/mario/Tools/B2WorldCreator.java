@@ -1,6 +1,6 @@
 package com.xacobe.mario.Tools;
 
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -13,11 +13,19 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
-import com.xacobe.mario.Sprites.Personaje;
+import com.xacobe.mario.Sprites.Cofres;
+import com.xacobe.mario.Sprites.NoShurikenDude;
 
 public class B2WorldCreator {
+    public Array<NoShurikenDude> getNoshurikenDUdes() {
+        return noshurikenDUdes;
+    }
+
+    private Array<NoShurikenDude> noshurikenDUdes;
+
     public B2WorldCreator(PlayScreen screen) {
         World world = screen.getWorld();
         TiledMap map = screen.getMap();
@@ -70,6 +78,22 @@ public class B2WorldCreator {
             fixtureDef.filter.categoryBits = MarioBros.GROUND_BIT;
         }
 
+        //Crear todos los NoshurikenDude
+        noshurikenDUdes = new Array<NoShurikenDude>();
+        for (MapObject object : map.getLayers().get(7).getObjects().getByType(RectangleMapObject.class)) {
+            Rectangle rec = ((RectangleMapObject) object).getRectangle();
+            noshurikenDUdes.add(new NoShurikenDude(screen, rec.getX() / MarioBros.PPM, rec.getY() / MarioBros.PPM));
+        }
+
+        //Crear los cofres
+        MapLayer cofreLayer = screen.getMap().getLayers().get(8); // La capa 8, índice 7 (si las capas están indexadas desde 0)
+        for (MapObject object : cofreLayer.getObjects()) {
+            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+            // Creamos un cofre en la posición del objeto, escalando a PPM:
+            new Cofres(screen, rect.x / MarioBros.PPM, rect.y / MarioBros.PPM, rect.width / MarioBros.PPM, rect.height / MarioBros.PPM);
+
+
+        }
     }
 
     // chatgpt (revisar y entender)
