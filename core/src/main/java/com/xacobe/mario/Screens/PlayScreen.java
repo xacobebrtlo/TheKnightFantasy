@@ -90,6 +90,8 @@ public class PlayScreen implements Screen {
     }
 
     private Timer.Task enemyAttackTask;
+    private Timer.Task demonAttackTask;
+
 
     @Override
     public void show() {
@@ -103,15 +105,20 @@ public class PlayScreen implements Screen {
                         noShurikenDude.ataqueEnemigo();
                     }
                 }
+            }
+        }, 1, 4);
+        demonAttackTask = Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+
                 for (Demon demon : creator.getDemons()) {
                     if (!demon.destroyed) {
                         demon.isAttacking = true;
                         demon.ataqueEnemigo();
                     }
-
                 }
-
             }
+
         }, 1, 4);
     }
 
@@ -266,6 +273,9 @@ public class PlayScreen implements Screen {
     public void hide() {
         if (enemyAttackTask != null) {
             enemyAttackTask.cancel();
+        }
+        if (demonAttackTask != null) {
+           demonAttackTask.cancel();
         }
     }
 

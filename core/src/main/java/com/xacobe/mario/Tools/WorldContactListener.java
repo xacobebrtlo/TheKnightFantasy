@@ -28,19 +28,16 @@ public class WorldContactListener implements ContactListener {
                 if (fixA.getFilterData().categoryBits == MarioBros.ATTACK_BIT
                     && fixB.getUserData() != null
                     && fixB.getUserData() instanceof Enemy) {
-
-                    Enemy enemy = (Enemy) fixB.getUserData(); // Generaliza primero
-
-                    if (enemy instanceof Demon) { // ⚠️ Ahora verificamos si es Demon
-                        Demon demon = (Demon) enemy;
-                        if (!demon.destroyed && !demon.setToDestroy) {
-                            demon.hitOnSword();
-                        }
-                    } else if (enemy instanceof NoShurikenDude) { // ⚠️ También verificamos si es NoShurikenDude
-                        NoShurikenDude noShurikenDude = (NoShurikenDude) enemy;
-                        if (!noShurikenDude.destroyed && !noShurikenDude.setToDestroy) {
-                            noShurikenDude.hitOnSword();
-                        }
+                    Enemy enemy = (Enemy) fixB.getUserData();
+                    if (!((NoShurikenDude) enemy).destroyed && !((NoShurikenDude) enemy).setToDestroy) {
+                        enemy.hitOnSword();
+                    }
+                } else if (fixB.getFilterData().categoryBits == MarioBros.ATTACK_BIT
+                    && fixA.getUserData() != null
+                    && fixA.getUserData() instanceof Enemy) {
+                    Enemy enemy = (Enemy) fixA.getUserData();
+                    if (!((NoShurikenDude) enemy).destroyed && !((NoShurikenDude) enemy).setToDestroy) {
+                        enemy.hitOnSword();
                     }
                 }
                 break;
