@@ -1,0 +1,34 @@
+
+Demon_and_Health.png
+size: 4096, 512
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+corazonesVida
+  rotate: false
+  xy: 1540, 2
+  size: 901, 300
+  orig: 901, 300
+  offset: 0, 0
+  index: -1
+demon-attack
+  rotate: false
+  xy: 2, 304
+  size: 2640, 192
+  orig: 2640, 192
+  offset: 0, 0
+  index: -1
+demon-attack-no-breath
+  rotate: false
+  xy: 2, 126
+  size: 1536, 176
+  orig: 1536, 176
+  offset: 0, 0
+  index: -1
+demon-idle
+  rotate: false
+  xy: 2644, 352
+  size: 960, 144
+  orig: 960, 144
+  offset: 0, 0
+  index: -1
