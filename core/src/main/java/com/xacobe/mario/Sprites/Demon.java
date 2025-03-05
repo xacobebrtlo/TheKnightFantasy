@@ -13,6 +13,8 @@ import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
 
 public class Demon extends Enemy {
+
+
     private float stateTimer;
     private Animation<TextureRegion> attackAnimation;
     private Animation<TextureRegion> idleAnimation;
@@ -22,9 +24,10 @@ public class Demon extends Enemy {
     public boolean destroyed;
     private Fixture attackFixture;
 
-    private float originalY;
-    private float floatAmplitude = 0.5f;  // Movimiento vertical en metros
-    private float floatSpeed = 1.5f;      // Velocidad de oscilación
+    // Usamos las dimensiones de la región "demon-attack" (2640x192 para 11 frames → cada frame 240x192)
+    // Para que ambas animaciones se muestren del mismo tamaño, fijamos el sprite a 240x192 (en píxeles) convertido a metros.
+    private final float spriteWidth = 240 / MarioBros.PPM;
+    private final float spriteHeight = 192 / MarioBros.PPM;
 
     public Demon(PlayScreen screen, float x, float y) {
         super(screen, x, y);
@@ -32,40 +35,48 @@ public class Demon extends Enemy {
         isAttacking = false;
         setToDestroy = false;
         destroyed = false;
-        originalY = y;
 
-        // Cargar el atlas
+        // Cargar el atlas específico para Demon
         demonAtlas = new TextureAtlas(Gdx.files.internal("Demon_and_Health.atlas"));
 
         // --- Animación de Ataque ---
         TextureRegion attackRegion = demonAtlas.findRegion("demon-attack");
+        if (attackRegion == null) {
+            Gdx.app.error("Demon", "No se encontró la región 'demon-attack'");
+        }
         int frameCountAttack = 11;
-        int frameWidthAttack = attackRegion.getRegionWidth() / frameCountAttack;
-        int frameHeightAttack = attackRegion.getRegionHeight();
-        Array<TextureRegion> attackFrames = new Array<>();
+        int frameWidthAttack = attackRegion.getRegionWidth() / frameCountAttack; // Debe ser 240
+        int frameHeightAttack = attackRegion.getRegionHeight();                  // Debe ser 192
+        Array<TextureRegion> attackFrames = new Array<TextureRegion>();
         for (int i = 0; i < frameCountAttack; i++) {
             attackFrames.add(new TextureRegion(attackRegion, i * frameWidthAttack, 0, frameWidthAttack, frameHeightAttack));
         }
-        attackAnimation = new Animation<>(0.1f, attackFrames);
+        attackAnimation = new Animation<TextureRegion>(0.1f, attackFrames);
 
         // --- Animación de Idle ---
         TextureRegion idleRegion = demonAtlas.findRegion("demon-idle");
+        if (idleRegion == null) {
+            Gdx.app.error("Demon", "No se encontró la región 'demon-idle'");
+        }
         int frameCountIdle = 6;
-        int frameWidthIdle = idleRegion.getRegionWidth() / frameCountIdle;
-        int frameHeightIdle = idleRegion.getRegionHeight();
-        Array<TextureRegion> idleFrames = new Array<>();
+        int frameWidthIdle = idleRegion.getRegionWidth() / frameCountIdle; // 960/6 = 160
+        int frameHeightIdle = idleRegion.getRegionHeight();                // 144
+        Array<TextureRegion> idleFrames = new Array<TextureRegion>();
         for (int i = 0; i < frameCountIdle; i++) {
             idleFrames.add(new TextureRegion(idleRegion, i * frameWidthIdle, 0, frameWidthIdle, frameHeightIdle));
         }
-        idleAnimation = new Animation<>(0.1f, idleFrames);
+        // Nota: aunque los frames idle son 160x144, al fijar los bounds del sprite (240x192)
+        // se estirarán para mantener un tamaño uniforme.
+        idleAnimation = new Animation<TextureRegion>(0.1f, idleFrames);
 
-        // Ajustamos los bounds del sprite para que se centre correctamente en el cuerpo
-        setBounds(getX(), getY(), frameWidthAttack / MarioBros.PPM, frameHeightAttack / MarioBros.PPM);
+        // Establecer los bounds del sprite para que tenga el tamaño deseado
+        setBounds(getX(), getY(), spriteWidth, spriteHeight);
 
-        // Ataque automático cada 4 segundos
+        // Programa el ataque automático cada 4 segundos
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
+                // Solo inicia el ataque si el demonio aún no ha sido destruido
                 if (!destroyed) {
                     ataqueEnemigo();
                 }
@@ -75,22 +86,24 @@ public class Demon extends Enemy {
 
     @Override
     protected void defineEnemy() {
+        // Usamos un cuerpo kinemático para que el demonio "flote" (no se vea afectado por la gravedad)
         BodyDef bdef = new BodyDef();
-        bdef.position.set(getX(), getY() + 1); // ⚠️ Asegura que el demonio flote centrado
         bdef.type = BodyDef.BodyType.KinematicBody;
+        // Colocamos el cuerpo centrado en el sprite
+        bdef.position.set(getX() + spriteWidth / 2, getY() + spriteHeight / 3);
         b2body = world.createBody(bdef);
 
-        // Ajuste de colisión centrada al sprite
+        // Crear una forma de colisión centrada en el sprite, con las mismas dimensiones que el sprite
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(1f, 0.8f);  // ⚠️ Se adapta al tamaño real del sprite
+        shape.setAsBox(spriteWidth / 4, spriteHeight / 4);
 
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
         fdef.density = 1.0f;
         fdef.friction = 0f;
         fdef.filter.categoryBits = MarioBros.DEMON_BIT;
-        fdef.filter.maskBits = MarioBros.PERSONAJE_BIT | MarioBros.ATTACK_BIT;  // ⚠️ No choca con el suelo
-
+        // El demonio no colisiona con el suelo para que flote; sólo interactúa con el personaje y ataques
+        fdef.filter.maskBits = MarioBros.PERSONAJE_BIT | MarioBros.ATTACK_BIT;
         b2body.createFixture(fdef).setUserData(this);
         shape.dispose();
     }
@@ -99,13 +112,7 @@ public class Demon extends Enemy {
     public void update(float dt) {
         stateTimer += dt;
 
-        // Hacer que el demonio flote arriba y abajo
-        if (b2body != null) {
-            float newY = originalY + floatAmplitude * (float) Math.sin(floatSpeed * stateTimer);
-            b2body.setTransform(b2body.getPosition().x, newY, 0);
-        }
-
-        // Si está marcado para destruirse, eliminar el cuerpo
+        // Si está marcado para destruirse, destruye el cuerpo y marca como destruido
         if (setToDestroy && !destroyed) {
             if (b2body != null) {
                 world.destroyBody(b2body);
@@ -114,23 +121,25 @@ public class Demon extends Enemy {
             destroyed = true;
         }
 
-        // Si está destruido, ocúltalo
+        // Si ya está destruido, oculta el sprite y sale
         if (destroyed) {
             setAlpha(0);
             return;
         }
 
-        // Centrar el sprite respecto al body
+        // Centrar el sprite respecto al cuerpo (el cuerpo está centrado, así que restamos la mitad del ancho y alto)
         if (b2body != null) {
-            setPosition(b2body.getPosition().x - getWidth() / 2,
-                b2body.getPosition().y - getHeight() / 2);
+            setPosition(b2body.getPosition().x - spriteWidth / 2,
+                b2body.getPosition().y - spriteHeight / 2);
         }
 
-        // Manejo de animaciones
+        // Gestión de animaciones:
         if (isAttacking) {
             if (attackAnimation.isAnimationFinished(stateTimer)) {
                 removeAttackFixture();
                 isAttacking = false;
+                // Reinicia el timer para que la animación idle empiece desde cero
+                stateTimer = 0;
             }
             setRegion(attackAnimation.getKeyFrame(stateTimer, false));
         } else {
@@ -138,20 +147,57 @@ public class Demon extends Enemy {
         }
     }
 
+    // Asegúrate de declarar estas variables a nivel de clase:
+    private int lives = 2;
+    private boolean recentlyHit = false;
+
     @Override
     public void hitOnSword() {
-        if (!destroyed) {
-            setColor(Color.RED);
-            setToDestroy = true;
+        // Si ya se ha marcado para destruir o se recibió un golpe recientemente, no hacer nada
+        if (destroyed || setToDestroy || recentlyHit) {
+            return;
+        }
+
+        recentlyHit = true;
+        lives--;  // Se le quita una vida
+        Gdx.app.log("Demon", "Vida restante: " + lives);
+
+        // Se pone rojo para indicar el impacto
+        setColor(Color.RED);
+
+        if (lives <= 0) {
+            // Si ya no quedan vidas, se programa que, después de 0.3 segundos, se marque para destruirse
+            // y se mantiene el color rojo sin resetearlo a blanco
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    setToDestroy = true;
+                    recentlyHit = false;
+                    b2body.applyLinearImpulse(new Vector2(.5f, 1f), b2body.getWorldCenter(), true);
+                }
+            }, 0.3f);
+        } else {
+            // Si aún le quedan vidas, se espera 0.2 segundos para volver al color normal y permitir recibir otro golpe
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    if (!destroyed) {
+                        setColor(Color.WHITE);
+                    }
+                    recentlyHit = false;
+                }
+            }, 0.2f);
         }
     }
+
+
 
     public void ataqueEnemigo() {
         if (destroyed || setToDestroy || b2body == null) {
             return;
         }
 
-        // Iniciar la animación de ataque
+        // Reinicia el temporizador y activa la animación de ataque
         stateTimer = 0;
         isAttacking = true;
 
@@ -160,19 +206,19 @@ public class Demon extends Enemy {
 
         FixtureDef fdef = new FixtureDef();
         PolygonShape attack = new PolygonShape();
+        // Definimos un sensor de ataque: aquí usamos un rectángulo que cubre un área en frente del demonio.
+        // En este ejemplo, se coloca el sensor a la izquierda del cuerpo (ajusta según la dirección deseada).
         attack.set(new Vector2[]{
-            new Vector2(-0.5f, -0.25f),
-            new Vector2(0.5f, -0.25f),
-            new Vector2(0.5f, 0.25f),
-            new Vector2(-0.5f, 0.25f)
+            new Vector2(0 / MarioBros.PPM, 10 / MarioBros.PPM),
+            new Vector2(-50 / MarioBros.PPM, -20 / MarioBros.PPM),
+            new Vector2(0 / MarioBros.PPM, -80 / MarioBros.PPM),
+            new Vector2(-100 / MarioBros.PPM, -80 / MarioBros.PPM)
         });
-
         fdef.shape = attack;
         fdef.isSensor = true;
         fdef.filter.categoryBits = MarioBros.DEMONATTACK_BIT;
-
         attackFixture = b2body.createFixture(fdef);
-        attackFixture.setUserData("ataqueEnemigo");
+        attackFixture.setUserData("ataqueDemon");
 
         attack.dispose();
     }
@@ -194,6 +240,7 @@ public class Demon extends Enemy {
 
     @Override
     public void onSwordHit() {
+        // Opcionalmente, aquí podrías agregar lógica si el demonio recibe un golpe de espada
     }
 
     public void dispose() {

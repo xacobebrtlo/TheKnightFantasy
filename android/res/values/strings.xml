@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">MarioBros</string>
+  <string name="app_name">The Knight Fantasy</string>
+
+    <!-- <string name="app_name">My New App Name</string> -->
 </resources>

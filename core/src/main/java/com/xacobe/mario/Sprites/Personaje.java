@@ -119,8 +119,8 @@ public class Personaje extends Sprite {
 
 
     public void update(float dt) {
-        if(collidingWithEnemy) {
-            b2body.setLinearVelocity(0,0);
+        if (collidingWithEnemy) {
+            b2body.setLinearVelocity(0, 0);
         }
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         setRegion(getFrame(dt));
@@ -263,7 +263,7 @@ public class Personaje extends Sprite {
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(10 / MarioBros.PPM, 25 / MarioBros.PPM);//antes era 5
         fdef.filter.categoryBits = MarioBros.PERSONAJE_BIT;
-        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ENEMYATTACK_BIT|MarioBros.COFRE_BIT;
+        fdef.filter.maskBits = MarioBros.GROUND_BIT | MarioBros.ENEMY_BIT | MarioBros.ENEMYATTACK_BIT | MarioBros.COFRE_BIT | MarioBros.DEMONATTACK_BIT;
 
 
         fdef.shape = shape;
@@ -318,7 +318,9 @@ public class Personaje extends Sprite {
         setColor(Color.RED);
         // Decrementa la vida y, si llega a 0, cambia el estado a DEAD
         lives--;
-
+        if (MarioBros.currentMapNumber == 2) {
+            lives--;
+        }
         if (lives <= 0) {
             b2body.applyLinearImpulse(new Vector2(-1f, 1f), b2body.getWorldCenter(), true);
             currentState = State.DEAD;

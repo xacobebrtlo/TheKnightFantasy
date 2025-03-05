@@ -100,7 +100,19 @@ public class WorldContactListener implements ContactListener {
                     }
                 }
                 break;
-
+            case MarioBros.DEMONATTACK_BIT | MarioBros.PERSONAJE_BIT:
+                if (fixA.getFilterData().categoryBits == MarioBros.DEMONATTACK_BIT
+                    && fixB.getUserData() != null
+                    && fixB.getUserData() instanceof Personaje) {
+                    Personaje p = (Personaje) fixB.getUserData();
+                    p.onEnemyHit();
+                } else if (fixB.getFilterData().categoryBits == MarioBros.DEMONATTACK_BIT
+                    && fixA.getUserData() != null
+                    && fixA.getUserData() instanceof Personaje) {
+                    Personaje p = (Personaje) fixA.getUserData();
+                    p.onEnemyHit();
+                }
+                break;
             // Otros casos...
         }
     }

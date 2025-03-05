@@ -1,65 +1,77 @@
 package com.xacobe.mario.Screens;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.xacobe.mario.MarioBros;
 
 public class MapSelectionScreen implements Screen {
     private MarioBros game;
     private Stage stage;
     private Skin skin;
+    private Texture background;
 
     public MapSelectionScreen(MarioBros game) {
         this.game = game;
-        stage = new Stage();
+        // Configurar el viewport y stage
+        Viewport viewport = new FitViewport(800, 600);
+        stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
-        // Carga un skin (puedes usar "uiskin.json" que viene con LibGDX)
+
+        // Cargar la imagen de fondo
+        background = new Texture(Gdx.files.internal("ImagenFondo.PNG"));
+        Image backgroundImage = new Image(background);
+        backgroundImage.setFillParent(true);
+        stage.addActor(backgroundImage);
+
+        // Cargar el skin por defecto (asegúrate de que uiskin.json existe en assets)
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        // Creamos una tabla para organizar los botones
+        // Crear una tabla para organizar los botones
         Table table = new Table();
         table.setFillParent(true);
         table.center();
 
-        TextButton map1Button = new TextButton("Mapa 1", skin);
-        TextButton map2Button = new TextButton("Mapa 2", skin);
-        TextButton map3Button = new TextButton("Mapa 3", skin);
+        // Crear botones usando el estilo por defecto del skin con mayor tamaño
+        TextButton level1Button = new TextButton("Level 1", skin);
+        TextButton level2Button = new TextButton("Level 2", skin);
+        TextButton level3Button = new TextButton("Level 3", skin);
 
-        table.add(map1Button).pad(10);
+        // Agregar botones a la tabla con mayor ancho y alto
+        table.add(level1Button).width(200).height(50).pad(10);
         table.row();
-        table.add(map2Button).pad(10);
+        table.add(level2Button).width(200).height(50).pad(10);
         table.row();
-        table.add(map3Button).pad(10);
+        table.add(level3Button).width(200).height(50).pad(10);
 
         stage.addActor(table);
 
-        // Listeners para cada botón
-        map1Button.addListener(new ChangeListener() {
+        // Agregar listeners a cada botón
+        level1Button.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Cambia a PlayScreen y pasa el número de mapa 1
                 game.setScreen(new PlayScreen(game, 1));
                 MarioBros.currentMapNumber = 1;
             }
         });
-
-        map2Button.addListener(new ChangeListener() {
+        level2Button.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.setScreen(new PlayScreen(game, 2));
                 MarioBros.currentMapNumber = 2;
             }
         });
-
-        map3Button.addListener(new ChangeListener() {
+        level3Button.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.setScreen(new PlayScreen(game, 3));
@@ -69,12 +81,11 @@ public class MapSelectionScreen implements Screen {
     }
 
     @Override
-    public void show() {
-    }
+    public void show() { }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
@@ -85,21 +96,14 @@ public class MapSelectionScreen implements Screen {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
-    }
-
-    @Override
-    public void hide() {
-    }
+    @Override public void pause() { }
+    @Override public void resume() { }
+    @Override public void hide() { }
 
     @Override
     public void dispose() {
         stage.dispose();
         skin.dispose();
+        background.dispose();
     }
 }

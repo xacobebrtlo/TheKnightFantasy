@@ -1,6 +1,7 @@
 package com.xacobe.mario.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -53,10 +54,13 @@ public class PlayScreen implements Screen {
         atlas = new TextureAtlas("personaje_y_enemigos.atlas");
         this.game = game;
 
-        MarioBros.currentMapNumber = mapNumber;
+        this.mapNumber = mapnumber;
+        MarioBros.currentMapNumber = this.mapNumber;
+
         gamecam = new OrthographicCamera();
         gameport = new FitViewport(MarioBros.V_WIDTH / MarioBros.PPM, MarioBros.V_HEIGHT / MarioBros.PPM, gamecam);
-        hud = new Hud(game.batch);
+        hud = new Hud(game.batch, game);
+
         this.mapNumber = mapnumber;
         String mapFile = "Magic_Cliffs_Fondo/Environment/TSX/level1.tmx";
         if (mapNumber == 2) {
@@ -95,6 +99,11 @@ public class PlayScreen implements Screen {
 
     @Override
     public void show() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        // Agrega el stage del juego (si lo tienes) y el del HUD
+        multiplexer.addProcessor(hud.stage);
+        multiplexer.addProcessor(controles.stage); // O el InputProcessor que maneje la lógica del juego
+        Gdx.input.setInputProcessor(multiplexer);
         // Programamos una tarea que se ejecute 4 segundos después y luego cada 4 segundos
         enemyAttackTask = Timer.schedule(new Timer.Task() {
             @Override
@@ -233,9 +242,10 @@ public class PlayScreen implements Screen {
 
         if (gameOver()) {
             game.setScreen(new GameOverScreen(game));
-            dispose();
+//            dispose();
 
         }
+
 
     }
 
@@ -275,7 +285,7 @@ public class PlayScreen implements Screen {
             enemyAttackTask.cancel();
         }
         if (demonAttackTask != null) {
-           demonAttackTask.cancel();
+            demonAttackTask.cancel();
         }
     }
 
