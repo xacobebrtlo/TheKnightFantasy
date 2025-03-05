@@ -40,9 +40,10 @@ public class Controles {
         crouchButton.addListener(new MovementListener(() -> crouch = true, () -> crouch = false));
 
         // Botones de acción (Saltar y Atacar)
-        ImageButton jumpButton = createButton("jump.png", 40, 40);
-        ImageButton attackButton = createButton("attack.png", 40, 40);
-
+        ImageButton jumpButton = createButton("jump.png", 70, 70);
+        ImageButton attackButton = createButton("attack.png", 70, 70);
+        jumpButton.getImage().setSize(30, 30);
+        attackButton.getImage().setSize(30, 30);
         jumpButton.addListener(new MovementListener(() -> jumpPressed = true, () -> jumpPressed = false));
         attackButton.addListener(new MovementListener(() -> attackPressed = true, () -> attackPressed = false));
 
@@ -55,8 +56,8 @@ public class Controles {
         Table actionTable = new Table();
         actionTable.bottom().right();
         actionTable.setFillParent(true);
-        actionTable.add(attackButton).size(40, 40).padRight(20).padBottom(20);
-        actionTable.add(jumpButton).size(40, 40).padRight(40).padBottom(100);
+        actionTable.add(attackButton).size(40, 40).padRight(40).padBottom(10);
+        actionTable.add(jumpButton).size(40, 40).padRight(40).padBottom(90);
 
         stage.addActor(table);
         stage.addActor(actionTable);

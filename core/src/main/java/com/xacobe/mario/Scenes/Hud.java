@@ -24,15 +24,13 @@ import com.xacobe.mario.MarioBros;
 public class Hud implements Disposable {
     public Stage stage;
     private Viewport viewport;
-
-    // Agregamos una variable para la instancia del juego
     private MarioBros game;
 
-    // Elementos del HUD (para tiempo)
+    // Elementos del HUD para el tiempo
     Label timeLabel;
     Label countdownLabel;
 
-    private Integer worldTimer;
+    private int worldTimer;
     private float timeCount;
 
     // Atlas y regiones para la vida (corazones)
@@ -43,41 +41,40 @@ public class Hud implements Disposable {
     private int totalLives = 3;
     private int currentLives = 3;
 
-    // Modificamos el constructor para recibir la instancia de MarioBros
     public Hud(SpriteBatch sb, MarioBros game) {
         this.game = game;
 
-        // Carga el atlas y extrae la región "corazonesVida"
+        // Cargar el atlas y extraer la región "corazonesVida"
         atlas = new TextureAtlas("Demon_and_Health.atlas");
         TextureRegion heartsRegion = atlas.findRegion("corazonesVida");
         if (heartsRegion == null) {
             Gdx.app.error("Hud", "No se encontró la región 'corazonesVida'");
         }
-        // Suponemos que la región se divide en 3 partes iguales horizontalmente
         int frameWidth = heartsRegion.getRegionWidth() / 3;
         int frameHeight = heartsRegion.getRegionHeight();
         heartFull = new TextureRegion(heartsRegion, 0, 0, frameWidth, frameHeight);
         heartHalf = new TextureRegion(heartsRegion, frameWidth, 0, frameWidth, frameHeight);
         heartEmpty = new TextureRegion(heartsRegion, frameWidth * 2, 0, heartsRegion.getRegionWidth() - frameWidth * 2, frameHeight);
 
-        // Inicializa timer (por ejemplo, 300 segundos)
+        // Inicializar timer
         worldTimer = 0;
         timeCount = 0;
 
         viewport = new FitViewport(MarioBros.V_WIDTH, MarioBros.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, sb);
 
-        // Configurar la tabla del HUD
+        // Crear la tabla principal para el HUD
         Table table = new Table();
         table.top();
         table.setFillParent(true);
+        // No se agrega padding superior para que la fila quede lo más arriba posible
+        table.padTop(-20);
 
-        // Cargar la imagen de Settings desde assets
-        Texture settingsTexture = new Texture(Gdx.files.internal("Settings.png"));
-        ImageButton settingsButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(settingsTexture)));
-        // Dentro del constructor de Hud (o donde configures el settingsButton)
-        // Dentro del constructor de Hud, donde configuras el settingsButton
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+        // Cargar el skin para los elementos UI
+        final Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        // Crear el botón de Settings con zona táctil ampliada usando createButton
+        ImageButton settingsButton = createButton("Settings.png", 100, 100, 35);
         settingsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -86,49 +83,67 @@ public class Hud implements Disposable {
             }
         });
 
+        // Crear una tabla interna para centrar verticalmente "TIME" y el contador
+        Table timerTable = new Table();
+        timerTable.center();
+        timerTable.add(timeLabel = new Label("TIME", new Label.LabelStyle(new BitmapFont(), Color.WHITE))).padBottom(5).padLeft(80);
+        timerTable.row();
+        timerTable.add(countdownLabel = new Label(String.format("%03d", worldTimer), new Label.LabelStyle(new BitmapFont(), Color.WHITE))).padLeft(80);
 
-        // Configurar la tabla:
-        // Primera celda: vacía (para los corazones a la izquierda)
-        // Segunda celda: label "TIME"
-        // Tercera celda: el botón de settings, alineado a la derecha
-        table.add().expandX().padTop(10);
-        table.add(timeLabel = new Label("TIME", new Label.LabelStyle(new BitmapFont(), Color.WHITE)))
-            .expandX().padTop(10);
-        table.add(settingsButton).expandX().padTop(10).right();
-
-        table.row();
-        // Segunda fila: se muestra el contador de tiempo en la columna central
+        // La fila principal del HUD:
+        // - Primera celda: vacía (los corazones se dibujan por fuera)
+        // - Segunda celda: la tabla interna con el timer
+        // - Tercera celda: el botón de Settings
         table.add().expandX();
-        table.add(countdownLabel = new Label(String.format("%03d", worldTimer), new Label.LabelStyle(new BitmapFont(), Color.WHITE)))
-            .expandX();
-        table.add().expandX();
+        table.add(timerTable).expandX().center();
+        table.add(settingsButton).expandX().right().size(100, 100);
 
         stage.addActor(table);
+    }
+
+    /**
+     * Crea un ImageButton a partir de una textura, definiendo su tamaño visual y ampliando su zona táctil.
+     * @param texturePath Ruta de la imagen.
+     * @param width Tamaño visual (ancho).
+     * @param height Tamaño visual (alto).
+     * @param extra Píxeles extra para ampliar la zona táctil.
+     * @return ImageButton configurado.
+     */
+    private ImageButton createButton(String texturePath, float width, float height, final float extra) {
+        Texture texture = new Texture(Gdx.files.internal(texturePath));
+        TextureRegion region = new TextureRegion(texture);
+        TextureRegionDrawable drawable = new TextureRegionDrawable(region);
+        ImageButton button = new ImageButton(drawable) {
+            @Override
+            public Actor hit(float x, float y, boolean touchable) {
+                if (x < -extra || x > getWidth() + extra || y < -extra || y > getHeight() + extra)
+                    return null;
+                return this;
+            }
+        };
+        button.setSize(width, height);
+        return button;
     }
 
     private Stage getStage() {
         return stage;
     }
 
-    // Método para actualizar el timer; se llama cada frame desde PlayScreen
+    // Actualiza el timer; se llama cada frame desde PlayScreen
     public void update(float dt) {
         timeCount += dt;
         worldTimer = (int) timeCount;
-
-        worldTimer++;  // Incrementa en lugar de decrementar
         countdownLabel.setText(String.format("%03d", worldTimer));
-
     }
 
-
-    // Actualiza las vidas actuales (si las usas)
+    // Actualiza las vidas actuales (si se usan)
     public void updateLives(int lives) {
         currentLives = lives;
     }
 
-    // Dibuja los corazones en una posición fija en la parte izquierda del HUD
+    // Dibuja los corazones en la parte izquierda del HUD
     public void drawLives(SpriteBatch batch) {
-        float x = 10; // margen izquierdo
+        float x = 10;
         float scale = 0.1f;
         float heartWidth = heartFull.getRegionWidth() * scale;
         float heartHeight = heartFull.getRegionHeight() * scale;
