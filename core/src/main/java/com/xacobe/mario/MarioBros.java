@@ -2,6 +2,9 @@ package com.xacobe.mario;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.xacobe.mario.Screens.MainMenuScreen;
 import com.xacobe.mario.Screens.PlayScreen;
@@ -28,12 +31,22 @@ public class MarioBros extends Game {
 
     public static int currentMapNumber = 1;
 
+    public static AssetManager manager;
+
     // Almacenamos la instancia de PlayScreen para poder reanudar el juego
     private PlayScreen playScreen;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
+        manager=new AssetManager();
+        manager.load("Audio/Music/Bassoon.ogg", Music.class);
+        manager.load("Audio/Sounds/select.wav", Sound.class);
+        manager.load("Audio/Sounds/attack.ogg", Sound.class);
+        manager.load("Audio/Sounds/enemy-death.wav", Sound.class);
+        manager.load("Audio/Sounds/player-death.wav", Sound.class);
+        manager.load("Audio/Sounds/jump.wav", Sound.class);
+        manager.finishLoading();
         // Creamos la pantalla de juego y la asignamos
         playScreen = new PlayScreen(this);
         setScreen(new MainMenuScreen(this));
@@ -49,6 +62,7 @@ public class MarioBros extends Game {
     @Override
     public void render() {
         super.render(); // Llama al renderizado de la pantalla actual
+
     }
 
     @Override
@@ -57,5 +71,6 @@ public class MarioBros extends Game {
         // Asegúrate de disponer también de la PlayScreen si es necesario
         playScreen.dispose();
         super.dispose();
+        manager.dispose();
     }
 }

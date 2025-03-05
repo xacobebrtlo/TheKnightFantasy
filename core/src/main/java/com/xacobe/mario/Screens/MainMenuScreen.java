@@ -2,6 +2,7 @@ package com.xacobe.mario.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -64,6 +65,7 @@ public class MainMenuScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 // Cambiar a la pantalla de selección de niveles
+                MarioBros.manager.get("Audio/Sounds/select.wav", Sound.class).play();
                 game.setScreen(new MapSelectionScreen(game));
             }
         });
@@ -71,20 +73,24 @@ public class MainMenuScreen implements Screen {
         optionsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Agrega la lógica de opciones aquí, por ejemplo, mostrar otro diálogo
+                MarioBros.manager.get("Audio/Sounds/select.wav", Sound.class).play();
+                game.setScreen(new OptionsScreen(game));
             }
         });
+
 
         exitButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                MarioBros.manager.get("Audio/Sounds/select.wav", Sound.class).play();
                 Gdx.app.exit();
             }
         });
     }
 
     @Override
-    public void show() { }
+    public void show() {
+    }
 
     @Override
     public void render(float delta) {
@@ -100,13 +106,16 @@ public class MainMenuScreen implements Screen {
     }
 
     @Override
-    public void pause() { }
+    public void pause() {
+    }
 
     @Override
-    public void resume() { }
+    public void resume() {
+    }
 
     @Override
-    public void hide() { }
+    public void hide() {
+    }
 
     @Override
     public void dispose() {

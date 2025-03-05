@@ -61,7 +61,7 @@ public class Hud implements Disposable {
         heartEmpty = new TextureRegion(heartsRegion, frameWidth * 2, 0, heartsRegion.getRegionWidth() - frameWidth * 2, frameHeight);
 
         // Inicializa timer (por ejemplo, 300 segundos)
-        worldTimer = 300;
+        worldTimer = 0;
         timeCount = 0;
 
         viewport = new FitViewport(MarioBros.V_WIDTH, MarioBros.V_HEIGHT, new OrthographicCamera());
@@ -81,7 +81,7 @@ public class Hud implements Disposable {
         settingsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                SettingsWindow settingsWindow = new SettingsWindow(skin, game);
+                SettingsWindow settingsWindow = new SettingsWindow(skin, game, stage);
                 settingsWindow.show(getStage());
             }
         });
@@ -113,12 +113,13 @@ public class Hud implements Disposable {
     // Método para actualizar el timer; se llama cada frame desde PlayScreen
     public void update(float dt) {
         timeCount += dt;
-        if (timeCount >= 1) {
-            worldTimer--;
-            countdownLabel.setText(String.format("%03d", worldTimer));
-            timeCount = 0;
-        }
+        worldTimer = (int) timeCount;
+
+        worldTimer++;  // Incrementa en lugar de decrementar
+        countdownLabel.setText(String.format("%03d", worldTimer));
+
     }
+
 
     // Actualiza las vidas actuales (si las usas)
     public void updateLives(int lives) {
@@ -145,5 +146,9 @@ public class Hud implements Disposable {
     public void dispose() {
         stage.dispose();
         atlas.dispose();
+    }
+
+    public int getWorldTimer() {
+        return worldTimer;
     }
 }

@@ -1,5 +1,7 @@
 package com.xacobe.mario.Sprites;
 
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -29,7 +31,7 @@ public class NoShurikenDude extends Enemy {
     public boolean setToDestroy;
     public boolean destroyed;
     private boolean estatico;
-   public boolean isAttacking = false;
+    public boolean isAttacking = false;
     private Fixture fixture;
 
     public NoShurikenDude(PlayScreen screen, float x, float y) {
@@ -38,9 +40,9 @@ public class NoShurikenDude extends Enemy {
         for (int i = 0; i < 9; i++) {
             frames.add(new TextureRegion(screen.getAtlas().findRegion("attack"), (i * 80) - 25, 285, 71, 55));
         }
-            attackAnimation = new Animation<TextureRegion>(0.1f, frames);
-            Statetimer = 0;
-            setBounds(getX(), getY(), 74 / MarioBros.PPM, 55 / MarioBros.PPM);
+        attackAnimation = new Animation<TextureRegion>(0.1f, frames);
+        Statetimer = 0;
+        setBounds(getX(), getY(), 74 / MarioBros.PPM, 55 / MarioBros.PPM);
 
         Staticanimation = new Animation<TextureRegion>(0.1f, attackAnimation.getKeyFrame(0));
 
@@ -116,6 +118,7 @@ public class NoShurikenDude extends Enemy {
 
         if (b2body.getLinearVelocity().y == 0 && b2body.getLinearVelocity().x == 0) {
             b2body.applyLinearImpulse(new Vector2(50f, 100f), b2body.getWorldCenter(), true);
+            MarioBros.manager.get("Audio/Sounds/enemy-death.wav", Sound.class).play();
         }
 
 //        // Cancela la tarea programada para el ataque si existe
@@ -170,7 +173,7 @@ public class NoShurikenDude extends Enemy {
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
-                    if(fixtureToRemove.getBody() != null) {
+                    if (fixtureToRemove.getBody() != null) {
                         fixtureToRemove.getBody().destroyFixture(fixtureToRemove);
                     }
                 }
@@ -178,7 +181,6 @@ public class NoShurikenDude extends Enemy {
             attackFixture = null;
         }
     }
-
 
 
     @Override

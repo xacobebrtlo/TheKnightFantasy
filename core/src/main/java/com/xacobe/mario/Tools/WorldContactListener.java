@@ -71,13 +71,9 @@ public class WorldContactListener implements ContactListener {
             //TODO cuando toque el cofre cambiar estado FINPARTIDA y Mostrar menu principal
             case MarioBros.PERSONAJE_BIT | MarioBros.COFRE_BIT:
                 if (fixA.getUserData() != null && fixA.getUserData() instanceof Personaje) {
-                    ((Personaje) fixA.getUserData()).currentState = Personaje.State.DEAD;
-                    Personaje p = (Personaje) fixA.getUserData();
-                    p.lives = 0;
+                    Personaje.playerWin = true;
                 } else if (fixB.getUserData() != null && fixB.getUserData() instanceof Personaje) {
-                    ((Personaje) fixB.getUserData()).currentState = Personaje.State.DEAD;
-                    Personaje p = (Personaje) fixB.getUserData();
-                    p.lives = 0;
+                    Personaje.playerWin = true;
                 }
                 break;
             case MarioBros.ATTACK_BIT | MarioBros.DEMON_BIT:

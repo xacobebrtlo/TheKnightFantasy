@@ -1,5 +1,6 @@
 package com.xacobe.mario.Sprites;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -35,6 +36,7 @@ public class Personaje extends Sprite {
     public static boolean iscrouching;
     public static boolean isAttacking;
     public static boolean isJumpAttack;
+    public static boolean playerWin;
 
     // 3 vidas iniciales
     public int lives = 3;
@@ -51,7 +53,7 @@ public class Personaje extends Sprite {
         previusState = State.STANDIND;
         stateTimer = 0;
         runningRight = true;
-
+        playerWin = false;
         iscrouching = false;
         isAttacking = false;
 
@@ -117,15 +119,29 @@ public class Personaje extends Sprite {
         setRegion(personajeStatico.getKeyFrame(stateTimer, true));
     }
 
+    private boolean jumpSoundPlayed = false;
 
     public void update(float dt) {
         if (collidingWithEnemy) {
             b2body.setLinearVelocity(0, 0);
         }
+
+        // Detectar el salto: si la velocidad vertical es positiva y aún no se reprodujo el sonido
+        if (b2body.getLinearVelocity().y > 0 && !jumpSoundPlayed) {
+            // Reproduce el sonido al iniciar el salto
+            MarioBros.manager.get("Audio/Sounds/jump.wav", Sound.class).play();
+            jumpSoundPlayed = true;
+        }
+        // Cuando el personaje deja de subir (o empieza a caer), resetea la bandera
+        if (b2body.getLinearVelocity().y <= 0) {
+            jumpSoundPlayed = false;
+        }
+
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         setRegion(getFrame(dt));
+
         // Si el personaje cae por debajo de un cierto umbral, se marca como muerto
-        if (b2body.getPosition().y < -5) { // Ajusta este valor según tu mundo
+        if (b2body.getPosition().y < -5) {
             currentState = State.DEAD;
         }
 
@@ -149,6 +165,7 @@ public class Personaje extends Sprite {
             }
         }
     }
+
 
     // Nuevo método para eliminar la fixture de ataque de forma segura
     private void removeAttackFixture() {
@@ -277,6 +294,7 @@ public class Personaje extends Sprite {
     private Fixture attackFixture; // Guardar la referencia de la fixture
 
     public void hitBoxAtaque() {
+
         if (attackFixture != null) {
             b2body.destroyFixture(attackFixture); // Eliminar si ya existe
             attackFixture = null;
@@ -287,7 +305,7 @@ public class Personaje extends Sprite {
 
         if (isAttacking || isJumpAttack || currentState == State.ATTACKCROUCH) {
             if (runningRight) {
-
+                MarioBros.manager.get("Audio/Sounds/attack.ogg", Sound.class).play();
                 attack.set(new Vector2[]{
                     new Vector2(0 / MarioBros.PPM, -15 / MarioBros.PPM),
                     new Vector2(56 / MarioBros.PPM, -5 / MarioBros.PPM),
@@ -322,6 +340,7 @@ public class Personaje extends Sprite {
             lives--;
         }
         if (lives <= 0) {
+            MarioBros.manager.get("Audio/Sounds/player-death.wav", Sound.class).play();
             b2body.applyLinearImpulse(new Vector2(-1f, 1f), b2body.getWorldCenter(), true);
             currentState = State.DEAD;
             // Aquí podrías cambiar de pantalla a Game Over

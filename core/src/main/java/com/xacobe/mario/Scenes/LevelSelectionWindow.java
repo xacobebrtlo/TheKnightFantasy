@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.xacobe.mario.MarioBros;
 import com.xacobe.mario.Screens.PlayScreen;
+import com.badlogic.gdx.audio.Sound;
 
 public class LevelSelectionWindow extends Dialog {
     private MarioBros game;
@@ -35,6 +36,9 @@ public class LevelSelectionWindow extends Dialog {
 
     @Override
     protected void result(Object object) {
+        // Reproduce el sonido de selección al pulsar cualquier botón
+        MarioBros.manager.get("Audio/Sounds/select.wav", Sound.class).play();
+
         String res = (String) object;
         Gdx.app.log("LevelSelectionWindow", "Opción seleccionada: " + res);
 
@@ -42,7 +46,7 @@ public class LevelSelectionWindow extends Dialog {
             hide();
             remove();
             // Crea una nueva instancia de SettingsWindow y la muestra usando el stage recibido
-            SettingsWindow settingsWindow = new SettingsWindow(skin, game);
+            SettingsWindow settingsWindow = new SettingsWindow(skin, game,stageRef);
             settingsWindow.show(stageRef);
         } else if (res.equals("level1")){
             game.setScreen(new PlayScreen(game, 1));

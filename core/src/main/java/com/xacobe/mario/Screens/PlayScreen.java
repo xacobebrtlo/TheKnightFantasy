@@ -3,6 +3,8 @@ package com.xacobe.mario.Screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -48,6 +50,7 @@ public class PlayScreen implements Screen {
     //Teclas y botones
     private Controles controles;
 
+    public static Music music;
     private int mapNumber = 1;
 
     public PlayScreen(MarioBros game, int mapnumber) {
@@ -81,6 +84,9 @@ public class PlayScreen implements Screen {
         controles = new Controles(game.batch);
 
         world.setContactListener(new WorldContactListener());
+        music = MarioBros.manager.get("Audio/Music/Bassoon.ogg", Music.class);
+        music.setLooping(true);
+        music.play();
 
 
     }
@@ -103,6 +109,7 @@ public class PlayScreen implements Screen {
         // Agrega el stage del juego (si lo tienes) y el del HUD
         multiplexer.addProcessor(hud.stage);
         multiplexer.addProcessor(controles.stage); // O el InputProcessor que maneje la lógica del juego
+        MarioBros.manager.get("Audio/Sounds/select.wav", Sound.class).play();
         Gdx.input.setInputProcessor(multiplexer);
         // Programamos una tarea que se ejecute 4 segundos después y luego cada 4 segundos
         enemyAttackTask = Timer.schedule(new Timer.Task() {
@@ -177,7 +184,7 @@ public class PlayScreen implements Screen {
     public void update(float dt) {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
-
+        hud.update(dt);
         personaje.update(dt);
         for (NoShurikenDude noShurikenDude : creator.getNoshurikenDUdes()) {
             if (!noShurikenDude.destroyed) {
@@ -187,6 +194,19 @@ public class PlayScreen implements Screen {
         // Actualiza los demon
         for (Demon demon : creator.getDemons()) {
             demon.update(dt);
+        }
+        // Cuando el personaje gana (toca el cofre)
+        if (Personaje.playerWin) {
+            // Supongamos que el timer de HUD indica el tiempo restante o el tiempo transcurrido.
+            // Por ejemplo, si "worldTimer" es el tiempo que tardaste:
+            int levelTime = hud.getWorldTimer(); // Asegúrate de que este método exista y devuelva el tiempo (en segundos)
+            int levelLives = personaje.lives;    // Vidas restantes del personaje
+
+            Records records = new Records();
+            records.updateRecord(MarioBros.currentMapNumber, levelTime, levelLives);
+
+            // Luego, cambiar a la pantalla de victoria o al menú principal
+            game.setScreen(new WinScreen(game));
         }
 
         gamecam.position.x = personaje.b2body.getPosition().x;

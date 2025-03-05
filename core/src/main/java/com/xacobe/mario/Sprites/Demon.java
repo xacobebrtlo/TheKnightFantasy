@@ -1,6 +1,8 @@
 package com.xacobe.mario.Sprites;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -166,6 +168,7 @@ public class Demon extends Enemy {
         setColor(Color.RED);
 
         if (lives <= 0) {
+            MarioBros.manager.get("Audio/Sounds/enemy-death.wav", Sound.class).play();
             // Si ya no quedan vidas, se programa que, después de 0.3 segundos, se marque para destruirse
             // y se mantiene el color rojo sin resetearlo a blanco
             Timer.schedule(new Timer.Task() {
