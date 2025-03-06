@@ -196,6 +196,6 @@
   <object id="64" x="384" y="240" width="16" height="32"/>
   <object id="65" x="1616" y="144" width="16" height="32"/>
   <object id="66" x="2688" y="176" width="16" height="32"/>
-  <object id="73" x="3104" y="240" width="16" height="32"/>
+  <object id="73" x="3088" y="208" width="16" height="32"/>
  </objectgroup>
 </map>
