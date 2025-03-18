@@ -45,7 +45,7 @@ public class MapSelectionScreen implements Screen {
         // Crear botones usando el estilo por defecto del skin con mayor tamaño
         TextButton level1Button = new TextButton("Level 1", skin);
         TextButton level2Button = new TextButton("Level 2", skin);
-        TextButton level3Button = new TextButton("Level 3", skin);
+//        TextButton level3Button = new TextButton("Level 3", skin);
         TextButton backButton   = new TextButton("Back", skin);
 
         // Agregar botones a la tabla con mayor ancho y alto
@@ -53,8 +53,8 @@ public class MapSelectionScreen implements Screen {
         table.row();
         table.add(level2Button).width(200).height(50).pad(10);
         table.row();
-        table.add(level3Button).width(200).height(50).pad(10);
-        table.row();
+//        table.add(level3Button).width(200).height(50).pad(10);
+//        table.row();
         table.add(backButton).width(200).height(50).pad(10);
 
         stage.addActor(table);
@@ -74,13 +74,7 @@ public class MapSelectionScreen implements Screen {
                 MarioBros.currentMapNumber = 2;
             }
         });
-        level3Button.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new PlayScreen(game, 3));
-                MarioBros.currentMapNumber = 3;
-            }
-        });
+//
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

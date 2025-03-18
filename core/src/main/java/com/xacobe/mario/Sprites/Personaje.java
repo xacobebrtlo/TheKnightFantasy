@@ -1,5 +1,7 @@
 package com.xacobe.mario.Sprites;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -343,6 +345,11 @@ public class Personaje extends Sprite {
             MarioBros.manager.get("Audio/Sounds/player-death.wav", Sound.class).play();
             b2body.applyLinearImpulse(new Vector2(-1f, 1f), b2body.getWorldCenter(), true);
             currentState = State.DEAD;
+            if (Gdx.input.isPeripheralAvailable(Input.Peripheral.Vibrator)) {//Implementada la vibracion
+                Gdx.input.vibrate(500); // Vibra por 500 milisegundos (ajusta según necesites)
+                Gdx.app.log("Vibracion", "Vibracion activa");
+            }
+
             // Aquí podrías cambiar de pantalla a Game Over
         }
         // Programa que, después de 0,5 segundos, se restaure el color normal (por ejemplo, blanco)

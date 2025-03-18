@@ -25,8 +25,8 @@ public class LevelSelectionWindow extends Dialog {
         row();
         button("Level 2", "level2");
         row();
-        button("Level 3", "level3");
-        row();
+//        button("Level 3", "level3");
+//        row();
         button("Back", "back");
 
         pack();
@@ -52,8 +52,8 @@ public class LevelSelectionWindow extends Dialog {
             game.setScreen(new PlayScreen(game, 1));
         } else if (res.equals("level2")){
             game.setScreen(new PlayScreen(game, 2));
-        } else if (res.equals("level3")){
-            game.setScreen(new PlayScreen(game, 3));
-        }
-    }
+//        } else if (res.equals("level3")){
+//            game.setScreen(new PlayScreen(game, 3));
+//        }
+    }}
 }
